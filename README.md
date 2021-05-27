@@ -1,4 +1,4 @@
-### 给golang编写一个UI框架
+### 给golang编写一个UI框架 
 废话不多说，先看效果
 ![点击查看详情会跳转第二个页面](https://upload-images.jianshu.io/upload_images/874510-ca79fa951beeb229.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
 
