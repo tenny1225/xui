@@ -316,7 +316,17 @@ func (v *View) SetScroll(s float64) {
 	} else if v.ScrollLength > 0 {
 		v.ScrollLength = 0
 	}
-	v.RequestLayout()
+	//v.RequestLayout()
+
+	var f func(view *View)
+
+	f = func(view *View) {
+		view.rgba = nil
+		if view.Parent!=nil{
+			f(view.Parent)
+		}
+	}
+	f(v)
 }
 func (v *View) GetMeasureSize() (float64, float64) {
 
@@ -576,7 +586,7 @@ func (v *View) Scroll(x, y float64, distance float64) bool {
 	}
 	if v.Direction != None {
 
-		v.SetScroll(distance * 5.5)
+		v.SetScroll(distance * 18)
 		return true
 	}
 
