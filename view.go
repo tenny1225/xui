@@ -34,15 +34,15 @@ const (
 const ScollBarMinWidth float64 = 20
 
 type Viewer interface {
-	render(canvas *gg.Context)
+	render(canvas XCanvas)
 
 	measure(w, h float64) (float64, float64)
 	setSize(w, h float64)
 
 	getSettingSize() (float64, float64)
 	getPosition() (float64, float64)
-	setCurrentPosition(x,y float64)
-	GetCurrentPosition()(float64, float64)
+	setCurrentPosition(x, y float64)
+	GetCurrentPosition() (float64, float64)
 	getEvent() func(x, y float64, t CursorType) bool
 	setPosition(x, y float64)
 	getTitle() string
@@ -51,13 +51,16 @@ type Viewer interface {
 	setParent(view *View)
 	init(w XWindow)
 	getRGBA() *image.RGBA
-	pushString(s string)bool
-	backspace()bool
-	addCursorIndex(i int)bool
+	pushString(s string) bool
+	backspace() bool
+	addCursorIndex(i int) bool
 
 	setRGBA(rgba *image.RGBA)
 	getBackground() *image.RGBA
 	setBackground(rgba *image.RGBA)
+	getRenderRect() (float64, float64, float64, float64)
+	setRenderPosition()
+	getId()string
 
 	Event(x, y float64, t CursorType) bool
 	Scroll(x, y float64, distance float64) bool
@@ -67,49 +70,51 @@ type Viewer interface {
 	GetSize() (float64, float64)
 	GetDirection() Direction
 	SetChildCount(c int)
-	SetFocus(x,y float64,b bool) bool
+	SetFocus(x, y float64, b bool) bool
+	Recycle()
 }
 
 type View struct {
-	Parent          *View
-	BackgroundColor color.Color
-	PrimaryColor   color.Color
-	AccentColor color.Color
-	Children        []Viewer
-	Width           float64
-	Height          float64
-	PaddingLeft     float64
+	id string
+	Parent           *View
+	BackgroundColor  color.Color
+	PrimaryColor     color.Color
+	AccentColor      color.Color
+	Children         []Viewer
+	Width            float64
+	Height           float64
+	PaddingLeft      float64
 	BorderWidth      float64
 	BorderRoundWidth float64
-	PaddingTop      float64
-	PaddingRight    float64
-	PaddingBottom   float64
-	TextColor       color.Color
-	Direction       Direction
-	ScrollLength    float64
-	MaxScrollLength float64
-	LineCount int
-	FontSize int
-	FontPath string
-	ScaleType    ImageScaleType
-	Src  string
-	currentLeft float64
-	currentTop float64
+	PaddingTop       float64
+	PaddingRight     float64
+	PaddingBottom    float64
+	TextColor        color.Color
+	Direction        Direction
+	ScrollLength     float64
+	MaxScrollLength  float64
+	LineCount        int
+	FontSize         int
+	FontPath         string
+	ScaleType        ImageScaleType
+	Src              string
+	currentLeft      float64
+	currentTop       float64
 
 	Left          float64
 	Top           float64
 	Title         string
 	ShouldMeasure bool
-	Drawer        func(canvas *gg.Context)
+	Drawer        func(canvas XCanvas)
 	Clicker       func(v *View, x, y float64)
 	Measurer      func(w, h float64) (float64, float64)
 	Eventer       func(x, y float64, t CursorType) bool
 	Scroller      func(x, y float64, distance float64) bool
-	Focuser       func(x,y float64,b bool)bool
+	Focuser       func(x, y float64, b bool) bool
 	GetView       func(i int) Viewer
 	GetChildCount func() int
 
-	Backgrounder func(canvas *gg.Context)
+	Backgrounder func(canvas XCanvas)
 
 	Font font.Face
 
@@ -127,11 +132,80 @@ type View struct {
 	isDynamicRender bool
 	childCount      int
 }
-func (v *View)setCurrentPosition(x,y float64){
-	v.currentLeft,v.currentTop=x,y
+
+func (v*View)getId()string  {
+	return v.id
 }
-func (v *View)GetCurrentPosition()(float64, float64){
-	return v.currentLeft,v.currentTop
+func (v *View) getRenderRect() (float64, float64, float64, float64) {
+	w, h := v.GetSize()
+	mw, mh := v.Window.GetSize()
+	l, t := v.GetCurrentPosition()
+
+	if v.Parent != nil {
+		px, py, px1, py1 := v.Parent.getRenderRect()
+
+		//pw,ph:=px1-px,py1-py
+
+		return math.Max(px, l), math.Max(py, t), math.Min(float64(px1), l+w), math.Min(float64(py1), t+h)
+
+	} else {
+		return math.Max(0, l), math.Max(0, t), math.Min(float64(mw), l+w), math.Min(float64(mh), t+h)
+	}
+
+}
+func (v *View) setRenderPosition() {
+	left,top:=0.0,0.0
+	l:=v
+	for {
+
+		left+=l.Left
+		top+=l.Top
+		if l.Parent!=nil{
+			if l.Parent.Direction==Vertical{
+
+				top+=l.Parent.ScrollLength
+				list:=l.Parent.Children
+				if list!=nil{
+					for _,c:=range list{
+
+						if c==l{
+							break
+						}
+						_,h:=c.GetSize()
+						top+=h
+					}
+				}
+
+			}else if l.Parent.Direction==Horizontal{
+				left+=l.Parent.ScrollLength
+				list:=l.Parent.Children
+				if list!=nil{
+					for _,c:=range list{
+
+						if c==l{
+							break
+						}
+						w,_:=c.GetSize()
+						left+=w
+					}
+				}
+			}
+			l = l.Parent
+		}else{
+			break
+		}
+	}
+	v.setCurrentPosition(left,top)
+}
+func (v *View) Recycle() {
+	v.background = nil
+	v.rgba = nil
+}
+func (v *View) setCurrentPosition(x, y float64) {
+	v.currentLeft, v.currentTop = x, y
+}
+func (v *View) GetCurrentPosition() (float64, float64) {
+	return v.currentLeft, v.currentTop
 }
 func (v *View) SetChildCount(c int) {
 	v.childCount = c
@@ -218,76 +292,82 @@ func (v *View) setParent(view *View) {
 	v.Parent = view
 
 }
-func (v *View) pushString(s string)bool{
-	for _,l:=range v.Children{
-		if l.pushString(s){
+func (v *View) pushString(s string) bool {
+	for _, l := range v.Children {
+		if l.pushString(s) {
 			return true
 		}
 	}
-	if v.isFocus{
-		v.Title = string([]rune(v.Title)[:v.cursorIndex])+s+string([]rune(v.Title)[v.cursorIndex:])
+	if v.isFocus {
+		v.Title = string([]rune(v.Title)[:v.cursorIndex]) + s + string([]rune(v.Title)[v.cursorIndex:])
 		v.cursorIndex++
+		v.Recycle()
 		return true
 	}
 	return false
 }
-func (v *View)backspace()bool{
-	for _,l:=range v.Children{
-		if l.backspace(){
+func (v *View) backspace() bool {
+	for _, l := range v.Children {
+		if l.backspace() {
 			return true
 		}
 	}
-	if v.isFocus{
-		if v.Title!=""{
-			list:=make([]rune,0)
-			for i,l:=range []rune(v.Title){
-				if i+1!=v.cursorIndex{
-					list = append(list,l)
+	if v.isFocus {
+		if v.Title != "" {
+			list := make([]rune, 0)
+			for i, l := range []rune(v.Title) {
+				if i+1 != v.cursorIndex {
+					list = append(list, l)
 				}
 			}
 			v.Title = string(list)
 			v.cursorIndex--
 		}
 
-		if v.cursorIndex<0{
+		if v.cursorIndex < 0 {
 			v.cursorIndex = 0
 		}
+		v.Recycle()
 		return true
 	}
 	return false
 }
-func (v *View)addCursorIndex(i int)bool{
-	for _,l:=range v.Children{
-		if l.addCursorIndex(i){
+func (v *View) addCursorIndex(i int) bool {
+	for _, l := range v.Children {
+		if l.addCursorIndex(i) {
 			return true
 		}
 	}
-	if v.isFocus{
-		if v.Title!=""{
-			v.cursorIndex+=i
+	if v.isFocus {
+		if v.Title != "" {
+			v.cursorIndex += i
 		}
 
-		if v.cursorIndex<0{
+		if v.cursorIndex < 0 {
 			v.cursorIndex = 0
-		}else if v.cursorIndex>len([]rune(v.Title)){
+		} else if v.cursorIndex > len([]rune(v.Title)) {
 			v.cursorIndex = len([]rune(v.Title))
 		}
+		v.Recycle()
 		return true
 	}
 	return false
 }
-func (v *View) SetFocus(x,y float64,b bool) bool{
-	for _,l:=range v.Children{
-		if l.SetFocus(x,y,b){
-			v.cursorView=l
+func (v *View) SetFocus(x, y float64, b bool) bool {
+	for _, l := range v.Children {
+		if l.SetFocus(x, y, b) {
+			v.cursorView = l
+
 			return true
 		}
 	}
-	if !b{
-		v.isFocus=b
+	if !b {
+		v.isFocus = b
 	}
-	if v.Focuser!=nil{
-		return v.Focuser(x,y,b)
+	if v.Focuser != nil {
+		if  v.Focuser(x, y, b){
+			return true
+		}
 	}
 	return false
 }
@@ -322,7 +402,7 @@ func (v *View) SetScroll(s float64) {
 
 	f = func(view *View) {
 		view.rgba = nil
-		if view.Parent!=nil{
+		if view.Parent != nil {
 			f(view.Parent)
 		}
 	}
@@ -398,7 +478,7 @@ func (v *View) init(w XWindow) {
 	}
 
 }
-func (v *View) render(canvas *gg.Context) {
+func (v *View) render(canvas XCanvas) {
 
 	if v.Children == nil {
 		if v.Direction != None && v.GetChildCount != nil {
@@ -413,54 +493,26 @@ func (v *View) render(canvas *gg.Context) {
 	}
 	if v.ShouldMeasure {
 		v.setSize(v.measure(v.getSettingSize()))
+		v.setRenderPosition()
 	}
-	w, h := v.GetSize()
-	if v.background == nil  {
-		if v.Backgrounder == nil {
-			img := image.NewRGBA(image.Rect(0, 0, int(w), int(h)))
-			dx, dy := float64(w), float64(h)
-			ctx := gg.NewContextForRGBA(img)
-			if v.GetFont() != nil {
-				//ctx.SetFontFace(v.GetFont())
-			}
-			if v.BackgroundColor != nil{
-				ctx.SetColor(v.BackgroundColor)
 
-				ctx.DrawRoundedRectangle(0, 0, dx, dy,v.BorderRoundWidth)
-				ctx.Fill()
+	if v.Backgrounder == nil {
+		if v.BackgroundColor != nil {
+			x1, y1, x2, y2 := v.getRenderRect()
+			if x2>x1&&y2>y1{
+				canvas.DrawRect(x1, y1, x2-x1, y2-y1, v.BackgroundColor)
 			}
 
-
-
-			if v.PrimaryColor!=nil&&v.BorderWidth>0{
-				ctx.SetLineWidth(v.BorderWidth)
-				ctx.SetColor(v.PrimaryColor)
-				ctx.DrawRoundedRectangle(0, 0, dx, dy,v.BorderRoundWidth)
-				ctx.Stroke()
-			}
-
-			v.setBackground(img)
-		} else {
-			img := image.NewRGBA(image.Rect(0, 0, int(w), int(h)))
-			ctx := gg.NewContextForRGBA(img)
-			if v.GetFont() != nil {
-				ctx.SetFontFace(v.GetFont())
-			}
-			v.Backgrounder(ctx)
-			v.setBackground(img)
 		}
 
-	}
-	if v.getBackground() != nil {
-		canvas.DrawImage(v.getBackground(), 0, 0)
+	} else {
+		v.Backgrounder(canvas)
+
 	}
 
 	if len(v.Children) > 0 {
 
-		pw, ph := v.GetSize()
-		offsetX, offsetY := 0.0, 0.0
 		for i, l := range v.Children {
-			//fmt.Println("i---",i,len(v.Children))
 			if l == nil && v.GetView != nil {
 				l = v.GetView(i)
 				l.setParent(v)
@@ -468,97 +520,62 @@ func (v *View) render(canvas *gg.Context) {
 
 				l.setSize(w, h)
 				v.Children[i] = l
-				v.measure(l.GetMeasureSize())
+
 			}
 			if l == nil {
 				continue
 			}
-			x, y := l.getPosition()
-			dx := int(x + offsetX)
-			dy := int(y + offsetY)
-			if v.Direction == Vertical {
-				dy += int(v.ScrollLength)
-			} else if v.Direction == Horizontal {
-				dx += int(v.ScrollLength)
-			}
+			l.setRenderPosition()
+			x, y := l.GetCurrentPosition()
 			w, h := l.GetSize()
+			x1,y1,x2,y2:=l.getRenderRect()
 
-			if float64(dx)+w < -20 || float64(dx) > pw+20 || float64(dy)+h < -20 || float64(dy) > ph+20 {
-				l.setRGBA(nil)
-				//v.Children[i] = nil
+			if float64(x)+w < x1 || float64(x) > x2 || float64(y)+h < y1 || float64(y) > y2 {
+				l.setCurrentPosition(float64(x), float64(y))
 			} else {
-				if l.getRGBA() == nil {
-					img := image.NewRGBA(image.Rect(0, 0, int(w), int(h)))
-					ctx := gg.NewContextForRGBA(img)
-					if l.GetFont() != nil {
-						ctx.SetFontFace(l.GetFont())
-					}
+				l.setCurrentPosition(float64(x), float64(y))
 
-					l.render(ctx)
-					l.setRGBA(img)
-				}
+				l.render(canvas)
 
-				l.setCurrentPosition(float64(dx),float64(dy))
-
-				canvas.DrawImage(l.getRGBA(), dx, dy)
 			}
 
+		}
+	}
+
+	w, h := v.GetSize()
+
+	if v.Drawer != nil {
+		v.Drawer(canvas)
+	} else {
+
+		l, t := v.GetCurrentPosition()
+		if v.MaxScrollLength < 0 {
 			if v.Direction == Vertical {
-				offsetY += (h)
-			} else if v.Direction == Horizontal {
-				offsetX += (w)
-			}
-		}
-	}
-	if v.getRGBA() == nil {
+				rate := math.Abs(v.ScrollLength / v.MaxScrollLength)
 
-		w, h := v.GetSize()
-		img := image.NewRGBA(image.Rect(0, 0, int(w), int(h)))
-
-		ctx := gg.NewContextForRGBA(img)
-		if v.Font != nil {
-			ctx.SetFontFace(v.Font)
-		}
-		if v.Drawer != nil {
-			v.Drawer(ctx)
-		} else {
-
-			if v.MaxScrollLength < 0 {
-				if v.Direction == Vertical {
-					rate := math.Abs(v.ScrollLength / v.MaxScrollLength)
-					ctx.SetColor(color.RGBA{0x80, 0x80, 0x80, 0x99})
-					scrollBarWidth := h * h / (h + math.Abs(v.MaxScrollLength))
-					if scrollBarWidth < 10 {
-						scrollBarWidth = 10
-					}
-					x0, y0 := w-10, (h-scrollBarWidth)*rate
-					x1, y1 := x0+10, scrollBarWidth*(1-rate)+rate*h
-					ctx.SetColor(colornames.Gray)
-					ctx.DrawRectangle(x0, y0, x1-x0, y1-y0)
-					ctx.Fill()
-
-				} else if v.Direction == Horizontal {
-					rate := math.Abs(v.ScrollLength / v.MaxScrollLength)
-					ctx.SetColor(color.RGBA{0x80, 0x80, 0x80, 0x99})
-					scrollBarWidth := w * w / (w + math.Abs(v.MaxScrollLength))
-					if scrollBarWidth < 10 {
-						scrollBarWidth = 10
-					}
-					x0, y0 := (w-scrollBarWidth)*rate, h-10
-					x1, y1 := scrollBarWidth*(1-rate)+rate*w, y0+10
-
-					ctx.SetColor(colornames.Gray)
-					ctx.DrawRectangle(x0, y0, x1-x0, y1-y0)
-					ctx.Fill()
+				scrollBarWidth := h * h / (h + math.Abs(v.MaxScrollLength))
+				if scrollBarWidth < 10 {
+					scrollBarWidth = 10
 				}
-			}
+				x0, y0 := w-10, (h-scrollBarWidth)*rate
+				x1, y1 := x0+10, scrollBarWidth*(1-rate)+rate*h
 
+				canvas.DrawRect(l+x0, t+y0, x1-x0, y1-y0, colornames.Black)
+
+			} else if v.Direction == Horizontal {
+				rate := math.Abs(v.ScrollLength / v.MaxScrollLength)
+				scrollBarWidth := w * w / (w + math.Abs(v.MaxScrollLength))
+				if scrollBarWidth < 10 {
+					scrollBarWidth = 10
+				}
+				x0, y0 := (w-scrollBarWidth)*rate, h-10
+				x1, y1 := scrollBarWidth*(1-rate)+rate*w, y0+10
+
+				canvas.DrawRect(l+x0, t+y0, x1-x0, y1-y0,  colornames.Black)
+			}
 		}
 
-		v.setRGBA(img)
 	}
-
-	canvas.DrawImage(v.getRGBA(), 0, 0)
 
 }
 func (v *View) Scroll(x, y float64, distance float64) bool {
@@ -586,7 +603,7 @@ func (v *View) Scroll(x, y float64, distance float64) bool {
 	}
 	if v.Direction != None {
 
-		v.SetScroll(distance * 18)
+		v.SetScroll(distance * 35)
 		return true
 	}
 
@@ -634,12 +651,13 @@ func (v *View) Event(x, y float64, action CursorType) bool {
 			if c == nil {
 				continue
 			}
-			l, t := c.GetCurrentPosition()
-			width, height := c.GetSize()
+			//l, t := c.GetCurrentPosition()
+			//width, height := c.GetSize()
+			x1,y1,x2,y2:=c.getRenderRect()
 
-			if x >= l && x <= l+width && y >= t && y <= t+height {
+			if x >= x1 && x <=x2 && y >= y1 && y <= y2 {
 
-				if c.Event(x-l, y-t, action) {
+				if c.Event(x, y, action) {
 					v.cursorView = c
 					return true
 				}
@@ -651,19 +669,18 @@ func (v *View) Event(x, y float64, action CursorType) bool {
 	case Up:
 
 		if v.cursorView != nil {
-			l, t := v.cursorView.GetCurrentPosition()
-			v.cursorView.Event(x-l, y-t, action)
+
+			v.cursorView.Event(x, y, action)
 		} else {
 
 			for _, c := range v.Children {
 				if c == nil {
 					continue
 				}
-				l, t := c.GetCurrentPosition()
-				width, height := c.GetSize()
+				x1,y1,x2,y2:=c.getRenderRect()
 
-				if x >= l && x <= l+width && y >= t && y <= t+height {
-					if c.Event(x-l, y-t, action){
+				if x >= x1 && x <= x2 && y >= y1 && y <= y2 {
+					if c.Event(x, y, action) {
 						return true
 					}
 				}
@@ -679,10 +696,10 @@ func (v *View) Event(x, y float64, action CursorType) bool {
 		}
 
 		v.Window.SetFocus(false)
-		if v.Focuser!=nil{
+		if v.Focuser != nil {
+			l,t:=v.GetCurrentPosition()
 
-
-			if v.SetFocus(x,y,true){
+			if v.SetFocus(x-l, y-t, true) {
 				return true
 			}
 		}
@@ -708,12 +725,11 @@ func (v *View) Event(x, y float64, action CursorType) bool {
 				continue
 			}
 
-			l, t := c.GetCurrentPosition()
-			width, height := c.GetSize()
+			x1,y1,x2,y2:=c.getRenderRect()
 
-			if x >= l && x <= l+width && y >= t && y <= t+height {
+			if x >= x1 && x <= x2 && y >= y1 && y <= y2 {
 
-				if c.Event(x-l, y-t, action) {
+				if c.Event(x, y, action) {
 					v.cursorView = c
 					return true
 				}
@@ -774,22 +790,15 @@ func NewButtonView(v *View) Viewer {
 	view.Drawer = view.Draw
 	view.Measurer = view.MeasureSize
 	var e error
-	view.Font,e= gg.LoadFontFace(view.FontPath,float64( view.FontSize))
-	if e!=nil{
+	view.Font, e = gg.LoadFontFace(view.FontPath, float64(view.FontSize))
+	if e != nil {
 		panic(e)
 	}
 	view.ShouldMeasure = true
 	view.Backgrounder = view.DrawBackground
-	if view.BackgroundColor==nil{
+	if view.BackgroundColor == nil {
 		view.BackgroundColor = colornames.Green
 	}
-
-
-	//view.TextColor = colornames.White
-	//view.PaddingTop = 4
-	//view.PaddingBottom = 4
-	//view.PaddingLeft = 6
-	//view.PaddingRight = 6
 	return v
 }
 func NewTextView(v *View) Viewer {
@@ -797,8 +806,9 @@ func NewTextView(v *View) Viewer {
 	view.Drawer = view.Draw
 	view.Measurer = view.MeasureSize
 	var e error
-	view.Font,e= gg.LoadFontFace(view.FontPath,float64( view.FontSize))
-	if e!=nil{
+	view.Font, e = gg.LoadFontFace(view.FontPath, float64(view.FontSize))
+
+	if e != nil {
 		panic(e)
 	}
 	view.ShouldMeasure = true
@@ -818,10 +828,10 @@ func (v *TextView) MeasureSize(w, h float64) (float64, float64) {
 	if mh == AUTO_SCOLL_PARENT {
 		mh = math.MaxFloat64
 	}
-	str:=v.Title
+	str := v.Title
 	_, strw, strh := v.WordWrap(str, mw-v.PaddingLeft-v.PaddingRight, mh-v.PaddingTop-v.PaddingBottom)
 	rw, rh := strw+v.PaddingLeft+v.PaddingRight, strh+v.PaddingTop+v.PaddingBottom
-	lineHeight := float64(v.Font.Metrics().Height.Ceil() + v.Font.Metrics().Descent.Ceil())+v.PaddingBottom+v.PaddingTop
+	lineHeight := float64(v.Font.Metrics().Height.Ceil()+v.Font.Metrics().Descent.Ceil()) + v.PaddingBottom + v.PaddingTop
 	if w == AUTO {
 		w = rw
 	}
@@ -830,8 +840,8 @@ func (v *TextView) MeasureSize(w, h float64) (float64, float64) {
 	}
 	if h == AUTO {
 		h = rh
-		if v.LineCount>0{
-			h = lineHeight*float64(v.LineCount)
+		if v.LineCount > 0 {
+			h = lineHeight * float64(v.LineCount)
 		}
 	}
 	if h == FULL_PARENT {
@@ -839,35 +849,62 @@ func (v *TextView) MeasureSize(w, h float64) (float64, float64) {
 	}
 	return w, h
 }
-func (v *TextView) DrawBackground(canvas *gg.Context) {
-	w, h := v.GetSize()
-	canvas.SetColor(v.BackgroundColor)
-	canvas.DrawRoundedRectangle(0, 0, w, h, 5)
-	canvas.Fill()
+func (v *TextView) DrawBackground(canvas XCanvas) {
+	if v.background == nil {
+		w, h := v.GetSize()
+		v.background = image.NewRGBA(image.Rect(0, 0, int(w), int(h)))
+		ctx := gg.NewContextForRGBA(v.background)
+		ctx.SetColor(v.BackgroundColor)
+		ctx.DrawRoundedRectangle(0, 0, w, h, 5)
+		ctx.Fill()
+	}
+	//if v.background!=nil{
+	l, t := v.GetCurrentPosition()
+	x1, y1, x2, y2 := v.getRenderRect()
+	if y2>y1&&x2>x1{
+		canvas.DrawImageInRetangle(l, t, v.background, x1, y1, x2-x1, y2-y1)
+	}
+
+	//}
+
 }
-func (v *TextView) Draw(canvas *gg.Context) {
-	w, h := v.GetSize()
+func (v *TextView) Draw(canvas XCanvas) {
+	if v.rgba == nil {
+		w, h := v.GetSize()
+		v.rgba = image.NewRGBA(image.Rect(0, 0, int(w), int(h)))
+		ctx := gg.NewContextForRGBA(v.rgba)
+		ctx.SetFontFace(v.GetFont())
 
-	list, _, _ := v.WordWrap(v.Title, w-v.PaddingLeft-v.PaddingRight, h-v.PaddingTop-v.PaddingBottom)
+		list, _, _ := v.WordWrap(v.Title, w-v.PaddingLeft-v.PaddingRight, h-v.PaddingTop-v.PaddingBottom)
 
-	lineHeight := float64(v.Font.Metrics().Height.Ceil() + v.Font.Metrics().Descent.Ceil())
-	topOffset := float64(v.Font.Metrics().Ascent.Ceil())
-	for i, l := range list {
-		if v.TextColor == nil {
-			v.TextColor = colornames.Black
-		}
+		lineHeight := float64(v.Font.Metrics().Height.Ceil() + v.Font.Metrics().Descent.Ceil())
+		topOffset := float64(v.Font.Metrics().Ascent.Ceil())
+		for i, l := range list {
+			if v.TextColor == nil {
+				v.TextColor = colornames.Black
+			}
 
-		if len(list)==1&&v.LineCount==1{
-			canvas.SetColor(v.TextColor)
-			canvas.DrawString(l, v.PaddingLeft, (h-lineHeight)/2+topOffset)
-			canvas.Fill()
-		}else{
-			canvas.SetColor(v.TextColor)
-			canvas.DrawString(l, v.PaddingLeft, v.PaddingTop+topOffset+float64(i)*lineHeight)
-			canvas.Fill()
+			if len(list) == 1 && v.LineCount == 1 {
+				ctx.SetColor(v.TextColor)
+				ctx.DrawString(l, v.PaddingLeft, (h-lineHeight)/2+topOffset)
+				ctx.Fill()
+			} else {
+				ctx.SetColor(v.TextColor)
+				ctx.DrawString(l, v.PaddingLeft, v.PaddingTop+topOffset+float64(i)*lineHeight)
+				ctx.Fill()
+			}
+
 		}
 
 	}
+	l, t := v.GetCurrentPosition()
+	x1, y1, x2, y2 := v.getRenderRect()
+
+	if y2>y1&&x2>x1{
+		canvas.DrawImageInRetangle(l, t, v.rgba, x1, y1, x2-x1, y2-y1)
+
+	}
+
 
 }
 func (v *View) WordWrap(s string, width, height float64) ([]string, float64, float64) {
@@ -884,12 +921,11 @@ func (v *View) WordWrap(s string, width, height float64) ([]string, float64, flo
 	w := 0.0
 
 	for _, l := range list {
+
 		strs := []rune(l)
 		start := 0
 		for i := 0; i < len(strs); i++ {
-
 			strw := font.MeasureString(v.Font, string(strs[start:i+1]))
-
 			if float64(strw.Ceil()) > width {
 				results = append(results, string(strs[start:i]))
 				start = i
@@ -910,21 +946,20 @@ func (v *View) WordWrap(s string, width, height float64) ([]string, float64, flo
 	if height > 0 && h > height {
 		h = height
 	}
-	if h==0{
+	if h == 0 {
 		h = float64(v.Font.Metrics().Height.Ceil() + v.Font.Metrics().Descent.Ceil())
 	}
 
 	return results, w, h
 }
 
-
 func NewEditView(v *View) Viewer {
-	view := &EditView{&TextView{v},0,0,0}
+	view := &EditView{&TextView{v}, 0, 0, 0}
 	view.Drawer = view.Draw
 	view.Measurer = view.MeasureSize
 	var e error
-	view.Font,e= gg.LoadFontFace(view.FontPath,float64( view.FontSize))
-	if e!=nil{
+	view.Font, e = gg.LoadFontFace(view.FontPath, float64(view.FontSize))
+	if e != nil {
 		panic(e)
 	}
 	view.ShouldMeasure = true
@@ -934,203 +969,205 @@ func NewEditView(v *View) Viewer {
 
 type EditView struct {
 	*TextView
-	times int
+	times     int
 	timestamp int64
-	offsetX float64
+	offsetX   float64
 }
-func (v *EditView) Focus(x,y float64,b bool) bool{
-	v.isFocus=b
-	if b{
+
+func (v *EditView) Focus(x, y float64, b bool) bool {
+	v.isFocus = b
+	if b {
 		v.timestamp = time.Now().Unix()
 		v.times = 0
 		go func(t int64) {
-			for v.isFocus&&t==v.timestamp{
-				v.RequestLayout()
-				<-time.Tick(time.Millisecond*600)
+			for v.isFocus && t == v.timestamp {
+				v.Recycle()
+				<-time.Tick(time.Millisecond * 600)
 				v.times++
 			}
-			v.times=0
+			v.times = 0
 		}(v.timestamp)
-		w,h:=v.GetSize()
-		x=x-v.PaddingLeft
-		y=y-v.PaddingTop
+		w, h := v.GetSize()
+		x = x - v.PaddingLeft
+		y = y - v.PaddingTop
 		var list []string
-		if v.LineCount!=1{
-			list,_,_=v.WordWrap(v.Title, w-v.PaddingLeft-v.PaddingRight, h-v.PaddingTop-v.PaddingBottom)
-			if len(list)==0{
-				list=[]string{""}
+		if v.LineCount != 1 {
+			list, _, _ = v.WordWrap(v.Title, w-v.PaddingLeft-v.PaddingRight, h-v.PaddingTop-v.PaddingBottom)
+			if len(list) == 0 {
+				list = []string{""}
 			}
-		}else{
-			list=[]string{v.Title}
+		} else {
+			list = []string{v.Title}
 		}
 
 		lineHeight := float64(v.Font.Metrics().Height.Ceil() + v.Font.Metrics().Descent.Ceil())
-		s:=""
-		widthindex :=0
-		line:=0
-		minW:=math.MaxFloat64
-		if y>0{
-			line=int(y/lineHeight)
-
+		s := ""
+		widthindex := 0
+		line := 0
+		minW := math.MaxFloat64
+		if y > 0 {
+			line = int(y / lineHeight)
 
 		}
-		if v.LineCount==1{
+		if v.LineCount == 1 {
 			line = 0
 		}
-		if x>0{
-			for i,l:=range []rune(list[line]){
-				s+=string(l)
-				advance:=float64(font.MeasureString(v.Font,s).Ceil())+v.offsetX
+		if x > 0 {
+			for i, l := range []rune(list[line]) {
+				s += string(l)
+				advance := float64(font.MeasureString(v.Font, s).Ceil()) + v.offsetX
 
-				if float64(advance)-x<minW{
-					minW = math.Abs(float64(advance)-x)
+				if float64(advance)-x < minW {
+					minW = math.Abs(float64(advance) - x)
 					widthindex = i
 				}
 
 			}
-		}else  {
+		} else {
 			widthindex = -1
 		}
 
-		lineNum:=0
-		if line>0{
-			for i,l:=range list{
-				if i>=line{
+		lineNum := 0
+		if line > 0 {
+			for i, l := range list {
+				if i >= line {
 					break
 				}
-				lineNum+=len([]rune(l))
+				lineNum += len([]rune(l))
 			}
 		}
-		v.cursorIndex= widthindex +1+lineNum
-		if v.cursorIndex>len([]rune(v.Title)){
-			v.cursorIndex =len([]rune(v.Title))
+		v.cursorIndex = widthindex + 1 + lineNum
+		if v.cursorIndex > len([]rune(v.Title)) {
+			v.cursorIndex = len([]rune(v.Title))
 		}
 
-
-
-
 	}
-	v.RequestLayout()
+	v.Recycle()
 	return b
 }
-func (v *EditView) Draw(canvas *gg.Context) {
-	w, h := v.GetSize()
-	var list []string
-	if v.LineCount!=1{
-		list, _, _ = v.WordWrap(v.Title, w-v.PaddingLeft-v.PaddingRight, h-v.PaddingTop-v.PaddingBottom)
-	}else{
-		list = []string{v.Title}
-	}
+func (v *EditView) Draw(canvas XCanvas) {
+	if v.rgba == nil {
+		w, h := v.GetSize()
+		v.rgba = image.NewRGBA(image.Rect(0, 0, int(w), int(h)))
+		ctx := gg.NewContextForRGBA(v.rgba)
+		ctx.SetFontFace(v.GetFont())
+		var list []string
+		if v.LineCount != 1 {
+			list, _, _ = v.WordWrap(v.Title, w-v.PaddingLeft-v.PaddingRight, h-v.PaddingTop-v.PaddingBottom)
+		} else {
+			list = []string{v.Title}
+		}
 
+		lineHeight := float64(v.Font.Metrics().Height.Ceil() + v.Font.Metrics().Descent.Ceil())
 
-	lineHeight := float64(v.Font.Metrics().Height.Ceil() + v.Font.Metrics().Descent.Ceil())
+		topOffset := float64(v.Font.Metrics().Ascent.Ceil())
+		if !v.isFocus {
 
-
-	topOffset := float64(v.Font.Metrics().Ascent.Ceil())
-	if !v.isFocus{
-
-		for i, l := range list {
-			if v.TextColor == nil {
-				v.TextColor = colornames.Black
+			for i, l := range list {
+				if v.TextColor == nil {
+					v.TextColor = colornames.Black
+				}
+				if len(list) == 1 && v.LineCount == 1 {
+					ctx.SetColor(v.TextColor)
+					ctx.DrawString(l, v.PaddingLeft, (h-lineHeight)/2+topOffset)
+					ctx.Fill()
+				} else {
+					ctx.SetColor(v.TextColor)
+					ctx.DrawString(l, v.PaddingLeft, v.PaddingTop+topOffset+float64(i)*lineHeight)
+					ctx.Fill()
+				}
+				//canvas.SetColor(v.TextColor)
+				//canvas.DrawString(l, v.PaddingLeft, v.PaddingTop+topOffset+float64(i)*lineHeight)
+				//canvas.Fill()
 			}
-			if len(list)==1&&v.LineCount==1{
-				canvas.SetColor(v.TextColor)
-				canvas.DrawString(l, v.PaddingLeft, (h-lineHeight)/2+topOffset)
-				canvas.Fill()
-			}else{
-				canvas.SetColor(v.TextColor)
-				canvas.DrawString(l, v.PaddingLeft, v.PaddingTop+topOffset+float64(i)*lineHeight)
-				canvas.Fill()
+		}
+
+		if v.isFocus {
+
+			var strlist []string
+			if v.LineCount != 1 {
+				strlist, _, _ = v.WordWrap(string([]rune(v.Title)[:v.cursorIndex]), w-v.PaddingLeft-v.PaddingRight, h-v.PaddingTop-v.PaddingBottom)
+
+			} else {
+				strlist = []string{string([]rune(v.Title)[:v.cursorIndex])}
 			}
-			//canvas.SetColor(v.TextColor)
-			//canvas.DrawString(l, v.PaddingLeft, v.PaddingTop+topOffset+float64(i)*lineHeight)
-			//canvas.Fill()
-		}
-	}
+			if len(strlist) == 0 {
+				strlist = append(strlist, "")
+			}
+			advance := font.MeasureString(v.Font, strlist[len(strlist)-1]).Ceil()
+			if v.LineCount == 1 {
 
-	if v.isFocus{
+				strw := font.MeasureString(v.Font, v.Title).Ceil()
 
-		var strlist []string
-		if v.LineCount!=1{
-			strlist,_,_=v.WordWrap(string([]rune(v.Title)[:v.cursorIndex]),w-v.PaddingLeft-v.PaddingRight, h-v.PaddingTop-v.PaddingBottom)
+				if float64(strw) > w-v.PaddingLeft-v.PaddingRight && float64(advance)+v.offsetX > w-v.PaddingLeft-v.PaddingRight {
+					if v.cursorIndex == len([]rune(v.Title)) {
+						v.offsetX = (w - v.PaddingLeft - v.PaddingRight) - float64(strw)
+					} else {
+						v.offsetX = (w - v.PaddingLeft - v.PaddingRight) - float64(advance)
+					}
 
-		}else{
-			strlist=[]string{string([]rune(v.Title)[:v.cursorIndex])}
-		}
-		if len(strlist)==0{
-			strlist =append(strlist,"")
-		}
-		advance:=font.MeasureString(v.Font,strlist[len(strlist)-1]).Ceil()
-		if v.LineCount==1{
+				}
 
-			strw:=font.MeasureString(v.Font,v.Title).Ceil()
-
-			if float64(strw)> w-v.PaddingLeft-v.PaddingRight&&float64(advance)+v.offsetX>w-v.PaddingLeft-v.PaddingRight{
-				if v.cursorIndex==len([]rune(v.Title)){
-					v.offsetX =(w-v.PaddingLeft-v.PaddingRight)-float64(strw)
-				}else{
-					v.offsetX =(w-v.PaddingLeft-v.PaddingRight)-float64(advance)
+				if float64(advance)+v.offsetX < 0 {
+					v.offsetX = -float64(advance)
 				}
 
 			}
 
-			if float64(advance)+v.offsetX<0{
-				v.offsetX = -float64(advance)
+			for i, l := range list {
+				if v.TextColor == nil {
+					v.TextColor = colornames.Black
+				}
+
+				//canvas.SetColor(v.TextColor)
+				//canvas.DrawString(l, v.PaddingLeft+v.offsetX, v.PaddingTop+topOffset+float64(i)*lineHeight)
+				//canvas.Fill()
+
+				if len(list) == 1 && v.LineCount == 1 {
+					ctx.SetColor(v.TextColor)
+					ctx.DrawString(l, v.PaddingLeft+v.offsetX, (h-lineHeight)/2+topOffset)
+					ctx.Fill()
+				} else {
+					ctx.SetColor(v.TextColor)
+					ctx.DrawString(l, v.PaddingLeft+v.offsetX, v.PaddingTop+topOffset+float64(i)*lineHeight)
+					ctx.Fill()
+				}
 			}
+
+			if v.times%2 == 0 {
+				if v.AccentColor == nil {
+					v.AccentColor = colornames.Black
+				}
+
+				if lineHeight == 1 {
+					ctx.SetColor(v.AccentColor)
+					ctx.DrawLine(v.PaddingLeft+float64(advance)+v.offsetX, h/2-lineHeight/2, v.PaddingLeft+float64(advance)+v.offsetX, h/2+lineHeight/2)
+					ctx.Stroke()
+				} else {
+					ctx.SetColor(v.AccentColor)
+					ctx.DrawLine(v.PaddingLeft+float64(advance)+v.offsetX, v.PaddingTop+lineHeight*float64(len(strlist)-1), v.PaddingLeft+float64(advance)+v.offsetX, lineHeight*float64(len(strlist))+v.PaddingTop)
+					ctx.Stroke()
+				}
+
+			}
+			//fmt.Println(strlist[len(strlist)-1])
 
 		}
-
-
-
-		for i, l := range list {
-			if v.TextColor == nil {
-				v.TextColor = colornames.Black
-			}
-
-			//canvas.SetColor(v.TextColor)
-			//canvas.DrawString(l, v.PaddingLeft+v.offsetX, v.PaddingTop+topOffset+float64(i)*lineHeight)
-			//canvas.Fill()
-
-			if len(list)==1&&v.LineCount==1{
-				canvas.SetColor(v.TextColor)
-				canvas.DrawString(l, v.PaddingLeft+v.offsetX, (h-lineHeight)/2+topOffset)
-				canvas.Fill()
-			}else{
-				canvas.SetColor(v.TextColor)
-				canvas.DrawString(l, v.PaddingLeft+v.offsetX, v.PaddingTop+topOffset+float64(i)*lineHeight)
-				canvas.Fill()
-			}
-		}
-
-
-		if v.times%2==0{
-			if v.AccentColor==nil{
-				v.AccentColor = colornames.Black
-			}
-
-			if lineHeight==1{
-				canvas.SetColor(v.AccentColor)
-				canvas.DrawLine(v.PaddingLeft+float64(advance)+v.offsetX,h/2-lineHeight/2,v.PaddingLeft+float64(advance)+v.offsetX,h/2+lineHeight/2)
-				canvas.Stroke()
-			}else{
-				canvas.SetColor(v.AccentColor)
-				canvas.DrawLine(v.PaddingLeft+float64(advance)+v.offsetX,v.PaddingTop+lineHeight*float64(len(strlist)-1),v.PaddingLeft+float64(advance)+v.offsetX,lineHeight*float64(len(strlist))+v.PaddingTop)
-				canvas.Stroke()
-			}
-
-
-
-		}
-		//fmt.Println(strlist[len(strlist)-1])
-
 	}
 
-}
+	l, t := v.GetCurrentPosition()
+	x1, y1, x2, y2 := v.getRenderRect()
+	if y2>y1&&x2>x1{
+		canvas.DrawImageInRetangle(l, t, v.rgba, x1, y1, x2-x1, y2-y1)
+	}
 
+
+
+}
 
 type ImageView struct {
 	*View
-	rgba image.Image
+	isLoading bool
 }
 type ImageScaleType int
 
@@ -1139,83 +1176,87 @@ const (
 	Cover ImageScaleType = 1
 )
 
-func NewImageView(v *View)Viewer {
-	view := &ImageView{v,nil}
+func NewImageView(v *View) Viewer {
+	view := &ImageView{v, false}
 	view.Drawer = view.Draw
 	view.Measurer = view.MeasureSize
 	view.ShouldMeasure = true
 	return view
 }
-func (v *ImageView)loadingData()  {
+func (v *ImageView) loadingData() {
+	defer func() {
+		v.isLoading=false
+	}()
 	if v.Src != "" {
+		var img image.Image
 		if strings.HasPrefix(v.Src, "http") {
 			resp, e := http.Get(v.Src)
 			if e != nil {
 				return
 			}
 			defer resp.Body.Close()
-			v.rgba, _, e = image.Decode(resp.Body)
+			img, _, e = image.Decode(resp.Body)
 			if e != nil {
 				return
 			}
 
-		}else{
+		} else {
 			f, e := os.Open(v.Src)
 			if e != nil {
 				return
 			}
 			defer f.Close()
-			v.rgba, _, e = image.Decode(f)
+			img, _, e = image.Decode(f)
 			if e != nil {
 				return
 			}
 		}
-	}
-	if v.rgba!=nil{
 		w, h := v.GetSize()
-			s:=1.0
-			if v.ScaleType==Fit{
+		s := 1.0
+		if v.ScaleType == Fit {
 
-				s=w/float64(v.rgba.Bounds().Dx())
-				if h/float64(v.rgba.Bounds().Dy())<s{
-					s = h/float64(v.rgba.Bounds().Dy())
-				}
-			}else if v.ScaleType==Cover{
-				s=w/float64(v.rgba.Bounds().Dx())
-				if h/float64(v.rgba.Bounds().Dy())>s{
-					s = h/float64(v.rgba.Bounds().Dy())
-				}
+			s = w / float64(img.Bounds().Dx())
+			if h/float64(img.Bounds().Dy()) < s {
+				s = h / float64(img.Bounds().Dy())
 			}
+		} else if v.ScaleType == Cover {
+			s = w / float64(img.Bounds().Dx())
+			if h/float64(img.Bounds().Dy()) > s {
+				s = h / float64(img.Bounds().Dy())
+			}
+		}
 
-			ctx:=gg.NewContext(int(w),int(h))
-		    ctx.DrawRoundedRectangle(0,0,w,h,v.BorderRoundWidth)
-		    ctx.Clip()
-			ctx.Scale(s,s)
-			ctx.DrawImageAnchored(v.rgba,int(w/(2*s)), int(h/(2*s)),0.5,0.5)
+		ctx := gg.NewContext(int(w), int(h))
+		ctx.DrawRoundedRectangle(0, 0, w, h, v.BorderRoundWidth)
+		ctx.Clip()
+		ctx.Scale(s, s)
+		ctx.DrawImageAnchored(img, int(w/(2*s)), int(h/(2*s)), 0.5, 0.5)
 
-			//mask:=gg.NewContext(int(w),int(h))
-			//mask.DrawRoundedRectangle(0,0,w,h,v.BorderRoundWidth)
-			//mask.Clip()
+		//mask:=gg.NewContext(int(w),int(h))
+		//mask.DrawRoundedRectangle(0,0,w,h,v.BorderRoundWidth)
+		//mask.Clip()
 
-			//ctx.SetMask(mask.AsMask())
+		//ctx.SetMask(mask.AsMask())
 
-			v.rgba = ctx.Image()
-
-		v.RequestLayout()
+		v.rgba = ctx.Image().(*image.RGBA)
 	}
+
+
 }
-func (v *ImageView) Draw(canvas *gg.Context) {
+func (v *ImageView) Draw(canvas XCanvas) {
 
-
-	if v.rgba == nil {
+	if v.rgba == nil &&!v.isLoading{
+		v.isLoading=true
 		go v.loadingData()
 	}
-	if v.rgba!=nil{
-		canvas.DrawImage(v.rgba, 0,0)
+	if v.rgba != nil {
+		l, t := v.GetCurrentPosition()
+		x1, y1, x2, y2 := v.getRenderRect()
+		canvas.DrawImageInRetangle(l, t, v.rgba, x1, y1, x2-x1, y2-y1)
+
 	}
 
 }
-
 
 func (v *ImageView) MeasureSize(w, h float64) (float64, float64) {
 

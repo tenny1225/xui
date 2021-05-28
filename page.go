@@ -12,10 +12,13 @@ type Page interface {
 	GetPopDifferentiator( )Differentiator
 	GetRecoverDifferentiator( )Differentiator
 	setWindow(window XWindow)
+	getRoot()*View
+	setRoot(v *View)
 
 }
 type BasePage struct {
 	window XWindow
+	root *View
 
 }
 
@@ -59,4 +62,10 @@ func (p *BasePage) GetPopDifferentiator( )(Differentiator){
 func (p *BasePage) GetRecoverDifferentiator( )Differentiator{
 	w,_:=p.GetWindow().GetSize()
 	return NewlineDifferentiator(-float64(w),0,0,0)
+}
+func (p *BasePage)getRoot()*View{
+	return p.root
+}
+func (p *BasePage)setRoot(v *View){
+	p.root=v
 }

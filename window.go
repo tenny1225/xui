@@ -2,8 +2,6 @@ package xui
 
 import (
 	"context"
-
-	"github.com/fogleman/gg"
 	"github.com/go-gl/gl/v2.1/gl"
 	"github.com/go-gl/glfw/v3.3/glfw"
 	"image"
@@ -64,8 +62,8 @@ type xwindow struct {
 	leaveAnimate Differentiator
 	enterAnimate Differentiator
 	rgba         image.Image
-	rootView     *View
 	locker       sync.RWMutex
+	offsetX float64
 
 }
 func (w *xwindow) getMQ()func(w*xwindow){
@@ -100,13 +98,13 @@ func (w *xwindow) Close() {
 func (w *xwindow)RequestLayout(){
 	w.pushMQ(func(w *xwindow) {
 		//w.rootView.Children[0] = w.pages[len(w.pages)-1].GetContentView()
-		w.rootView.init(w)
+		w.pages[len(w.pages)-1].getRoot().init(w)
 	})
 }
 func (w *xwindow)Reload() {
 	w.pushMQ(func(w *xwindow) {
-		w.rootView.Children[0] = w.pages[len(w.pages)-1].GetContentView()
-		w.rootView.init(w)
+		//w.pages[len(w.pages)-1].getRoot().Children[0] = w.pages[len(w.pages)-1].GetContentView()
+		//w.pages[len(w.pages)-1].getRoot().init(w)
 	})
 }
 func (w *xwindow) GetSize() (int, int) {
@@ -137,26 +135,11 @@ func (w *xwindow)PopPage(){
 			return
 		}
 
-		var rgba image.Image = nil
-		if w.rootView!=nil&&w.rootView.rgba!=nil{
-			ctx:=gg.NewContextForRGBA(w.rootView.rgba)
-			rgba=ctx.Image()
-		}
 		w.pages =w.pages[:len(w.pages)-1]
 		curretPage:=w.pages[len(w.pages)-1]
 		curretPage.Active()
 
-		width, height := w.window.GetSize()
-		w.rootView = &View{
-			Width:  float64(width),
-			Height: float64(height),
-			Title:  "parent",
-			Children: []Viewer{
-				curretPage.GetContentView(),
-			},
-		}
-		w.rootView.init(w)
-		w.rgba=rgba
+
 		if old!=nil{
 			w.leaveAnimate = old.GetPopDifferentiator()
 			w.enterAnimate= curretPage.GetRecoverDifferentiator()
@@ -167,10 +150,7 @@ func (w *xwindow)PopPage(){
 
 }
 func (w *xwindow)SetFocus(b bool){
-	w.rootView.SetFocus(-1,-1,b)
-	w.pushMQ(func(w *xwindow) {
-		w.rootView.RequestLayout()
-	})
+	w.pages[len(w.pages)-1].getRoot().SetFocus(-1,-1,b)
 }
 func (w *xwindow)initCurentPage(r string,data map[string]interface{})  {
 	w.pushMQ(func(w*xwindow) {
@@ -179,28 +159,13 @@ func (w *xwindow)initCurentPage(r string,data map[string]interface{})  {
 			old = w.pages[len(w.pages)-1]
 		}
 
-		if w.rootView!=nil&&w.rootView.rgba!=nil{
-			ctx:=gg.NewContextForRGBA(w.rootView.rgba)
-			w.rgba=ctx.Image()
-		}
+
 		currentPage:=w.router[r]
-		//currentPagePtrType := reflect.TypeOf(w.router[r]) //获取call的指针的reflect.Type
-		//
-		//currentPageTrueType := currentPagePtrType.Elem() //获取type的真实类型
-		//
-		//currentPagePtrValue := reflect.New(currentPageTrueType) //返回对象的指针对应的reflect.Value
-		//
-		//currentPage := currentPagePtrValue.Interface().(Page)
-
-
-
-
-
 		w.pages = append(w.pages,currentPage)
 		currentPage.Create(data)
 		currentPage.Active()
 		width, height := w.window.GetSize()
-		w.rootView = &View{
+		root:= &View{
 			Width:  float64(width),
 			Height: float64(height),
 			Title:  "parent",
@@ -208,7 +173,9 @@ func (w *xwindow)initCurentPage(r string,data map[string]interface{})  {
 				currentPage.GetContentView(),
 			},
 		}
-		w.rootView.init(w)
+		root.init(w)
+		currentPage.setRoot(root)
+
 		if old!=nil{
 			w.leaveAnimate = old.GetQueneDifferentiator()
 			w.enterAnimate=currentPage.GetEnterDifferentiator()
@@ -260,7 +227,7 @@ func (w *xwindow) pageTo(r string,data map[string]interface{},b bool) error {
 		w.initCurentPage(r,nil)
 		window.SetFocusCallback(func(win *glfw.Window, focused bool) {
 			if !focused{
-				w.rootView.SetFocus(-1,-1,false)
+				w.pages[len(w.pages)-1].getRoot().SetFocus(-1,-1,false)
 			}
 
 		})
@@ -268,49 +235,51 @@ func (w *xwindow) pageTo(r string,data map[string]interface{},b bool) error {
 			w.Close()
 		})
 		window.SetCharCallback(func(win *glfw.Window, char rune) {
-			w.rootView.pushString(string(char))
-			w.rootView.RequestLayout()
+			w.pages[len(w.pages)-1].getRoot().pushString(string(char))
+			//w.rootView.RequestLayout()
 		})
 		window.SetKeyCallback(func(win *glfw.Window, key glfw.Key, scancode int, action glfw.Action, mods glfw.ModifierKey) {
+			rootView:=w.pages[len(w.pages)-1].getRoot()
 			if key==glfw.KeyBackspace&&action== glfw.Release {
-				w.rootView.backspace()
-				w.rootView.RequestLayout()
+				rootView.backspace()
+				//w.rootView.RequestLayout()
 			}else if key==glfw.KeyLeft&&action== glfw.Release {
-				w.rootView.addCursorIndex(-1)
-				w.rootView.RequestLayout()
+				rootView.addCursorIndex(-1)
+				//w.rootView.RequestLayout()
 			}else if key==glfw.KeyRight&&action== glfw.Release {
-				w.rootView.addCursorIndex(1)
-				w.rootView.RequestLayout()
+				rootView.addCursorIndex(1)
+				//w.rootView.RequestLayout()
 			}
 		})
 
 		window.SetSizeCallback(func(win *glfw.Window, width int, height int) {
-
+			rootView:=w.pages[len(w.pages)-1].getRoot()
 			gl.Viewport(0, 0, int32(width), int32(height))
-			w.rootView.Width = float64(width)
-			w.rootView.Height = float64(height)
-			w.rootView.init(w)
+			rootView.Width = float64(width)
+			rootView.Height = float64(height)
+			rootView.init(w)
 		})
 		window.SetScrollCallback(func(win *glfw.Window, x float64, y float64) {
-			if w.rootView.currentPoint != nil&&w.enterAnimate==nil&&w.leaveAnimate==nil {
-				w.rootView.Scroll(w.rootView.currentPoint[0], w.rootView.currentPoint[1], y)
+			rootView:=w.pages[len(w.pages)-1].getRoot()
+			if rootView.currentPoint != nil&&w.enterAnimate==nil&&w.leaveAnimate==nil {
+				rootView.Scroll(rootView.currentPoint[0], rootView.currentPoint[1], y)
+				//w.offsetX+=y*22
 			}
 
 		})
 
 		window.SetCursorPosCallback(func(win *glfw.Window, xpos float64, ypos float64) {
 			if w.enterAnimate==nil&&w.leaveAnimate==nil{
-				width, height := win.GetSize()
-
-				w.rootView.Width, w.rootView.Height = float64(width), float64(height)
+				rootView:=w.pages[len(w.pages)-1].getRoot()
 				x, y := win.GetCursorPos()
-				l, t := w.rootView.getPosition()
+				l, t := w.pages[len(w.pages)-1].getRoot().getPosition()
+				width,height:=rootView.GetSize()
 
 				if x >= l && x <= l+float64(width) && y >= t && y <= t+float64(height) {
-					w.rootView.Event(x, y, Hover)
-					w.rootView.currentPoint = []float64{x, y}
+					w.pages[len(w.pages)-1].getRoot().Event(x, y, Hover)
+					w.pages[len(w.pages)-1].getRoot().currentPoint = []float64{x, y}
 				} else {
-					w.rootView.currentPoint = nil
+					w.pages[len(w.pages)-1].getRoot().currentPoint = nil
 				}
 			}
 
@@ -320,7 +289,7 @@ func (w *xwindow) pageTo(r string,data map[string]interface{},b bool) error {
 			if button == glfw.MouseButtonLeft &&w.enterAnimate==nil&&w.leaveAnimate==nil{
 				x, y := win.GetCursorPos()
 				width, height := win.GetSize()
-				l, t := w.rootView.getPosition()
+				l, t := w.pages[len(w.pages)-1].getRoot().getPosition()
 				ct := CursorType(0)
 				if action == glfw.Press {
 					ct = Down
@@ -329,7 +298,7 @@ func (w *xwindow) pageTo(r string,data map[string]interface{},b bool) error {
 				}
 				if x >= l && x <= l+float64(width) && y >= t && y <= t+float64(height) {
 
-					w.rootView.Event(x, y, ct)
+					w.pages[len(w.pages)-1].getRoot().Event(x, y, ct)
 				}
 
 			}
@@ -348,27 +317,16 @@ func (w *xwindow) pageTo(r string,data map[string]interface{},b bool) error {
 			width, height := window.GetSize()
 			px, py := window.GetCursorPos()
 			if px < 0 || px > float64(width) || py < 0 || py > float64(height) {
-				w.rootView.Event(px, py, Out)
+				w.pages[len(w.pages)-1].getRoot().Event(px, py, Out)
 			}
 
-			if w.rootView.rgba == nil {
-				img := image.NewRGBA(image.Rect(0, 0, int(w.rootView.Width), int(w.rootView.Height)))
-				ctx := gg.NewContextForRGBA(img)
-				w.rootView.render(ctx)
-				w.rootView.setRGBA(img)
-			}
+			w.pages[len(w.pages)-1].getRoot().render(canvas)
+			//canvas.DrawRect(0,0,100,100,colornames.Blue)
+			//canvas.DrawImageInRetangle(0,0,im,0,0,300,300)
 
-			if w.rgba!=nil&&w.leaveAnimate!=nil{
 
-				offsetX,offsetY:=w.leaveAnimate.GetCurrent()
-				canvas.DrawImage(offsetX, offsetY,w.rgba)
-			}
 
-			offsetX,offsetY:=0.0,0.0
-			if w.enterAnimate!=nil{
-				offsetX,offsetY = w.enterAnimate.GetCurrent()
-			}
-			canvas.DrawImage(offsetX, offsetY, w.rootView.getRGBA())
+
 
 			window.SwapBuffers()
 			glfw.PollEvents()
@@ -379,7 +337,7 @@ func (w *xwindow) pageTo(r string,data map[string]interface{},b bool) error {
 			}
 			if  w.leaveAnimate!=nil&&w.leaveAnimate.IsDone(){
 				w.leaveAnimate = nil
-				w.rgba=nil
+
 			}
 			if w.enterAnimate!=nil{
 				w.enterAnimate.Calc()

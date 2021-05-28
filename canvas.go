@@ -2,6 +2,7 @@ package xui
 
 import (
 	"github.com/fogleman/gg"
+	"github.com/go-gl/gl/v2.1/gl"
 	"image"
 	"image/color"
 	"image/draw"
@@ -18,8 +19,9 @@ type XCanvas interface {
 	DrawCircle(dx, dy, radius float64, p XPaint)
 	DrawLine(x1, y1, x2, y2 float64, p XPaint)
 	DrawText(str string,x, y ,ax,ay ,mw,mh float64, p XPaint)
-	DrawRect(x1, y1, x2, y2, fillet float64, p XPaint)
+	DrawRect(x1, y1, w, h float64, c color.Color)
 	DrawImage(x, y float64, img image.Image)
+	DrawImageInRetangle(x, y float64, img image.Image,rx,ry,rw,rh float64)
 
 	SetTranslate(x, y float64)
 	SetScale(sx, sy float64)
@@ -104,35 +106,50 @@ func (z *xcanvas) DrawLine(x1, y1, x2, y2 float64, p XPaint) {
 	t.Draw(z, math.Min(x1, x2), math.Min(y1, y2),ww,wh);
 }
 
-func (z *xcanvas) DrawRect(x1, y1, x2, y2, fillet float64, p XPaint) {
+func (z *xcanvas) DrawRect(x, y, w, h float64, c color.Color) {
+	winWidth, winHeight:=z.window.GetSize()
+	x, y = AppCoordinate2OpenGL(winWidth, winHeight, x, y)
+	w, h = AppWidthHeight2OpenGL(winWidth, winHeight, (float64(w)), (float64(h)))
+	//gl.Clear(gl.COLOR_BUFFER_BIT)
+	r,g,b,_:=c.RGBA()
 
-	rgba := image.NewRGBA(image.Rect(0, 0, int(math.Abs(x2-x1)), int(math.Abs(y2-y1))))
-	dc := gg.NewContextForRGBA(rgba)
-	dc.DrawRoundedRectangle(0, 0, math.Abs(x2-x1), math.Abs(y2-y1), fillet)
-	dc.SetColor(p.Color)
-	dc.Fill()
-	t := NewTexture(rgba)
-	w,h:=z.window.GetSize()
+	gl.Color3f(float32(r)/255,float32(g)/255,float32(b)/255)
+	gl.Rectf(float32(x),float32(y-h),float32(x+w),float32(y))
+	gl.Color3f(1,1,1)
 
-	t.Draw(z, math.Min(x1, x2), math.Min(y1, y2),w,h)
+	//gl.Rectf(x)
+
 }
 
 func (z *xcanvas) DrawImage(x, y float64, img image.Image) {
-	defer func() {
-		if e:=recover();e!=nil{
-			//fmt.Println(e)
-		}
-	}()
-	f:= func() {
-		rgba := image.NewRGBA(img.Bounds())
+	var rgba *image.RGBA
+	if dst, ok := img.(*image.RGBA); ok {
+		rgba = dst
+	}else{
+		rgba = image.NewRGBA(img.Bounds())
 		draw.Draw(rgba, rgba.Bounds(), img, image.Point{0, 0}, draw.Src)
-		t := NewTexture(rgba)
-		t.IsAlpha = true
-		w,h:=z.window.GetSize()
-		t.Draw(z, x, y,w,h);
 	}
 
-	f()
+	t := NewTexture(rgba)
+	t.IsAlpha = true
+	w,h:=z.window.GetSize()
+	t.Draw(z, x, y,w,h);
+
+}
+func (z *xcanvas) DrawImageInRetangle(x, y float64, img image.Image,rx,ry,rw,rh float64) {
+	var rgba *image.RGBA
+	if dst, ok := img.(*image.RGBA); ok {
+		rgba = dst
+	}else{
+		rgba = image.NewRGBA(img.Bounds())
+		draw.Draw(rgba, rgba.Bounds(), img, image.Point{0, 0}, draw.Src)
+	}
+
+	t := NewTexture(rgba)
+	t.IsAlpha = true
+	w,h:=z.window.GetSize()
+	//t.Draw(z, x, y,w,h);
+	t.DrawInRetangle(z,x,y,rx,ry,rw,rh,w,h)
 
 }
 

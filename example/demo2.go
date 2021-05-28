@@ -121,6 +121,7 @@ func (p *StartPage1) GetContentView() xui.Viewer {
 								BackgroundColor:colornames.White,
 								Title:"查看详情",
 								Clicker: func(v *xui.View, x, y float64) {
+									//fmt.Println("click")
 									v.Window.StartPage("end",nil,false)
 								},
 							}),
@@ -146,7 +147,7 @@ func (p *StartPage1) GetContentView() xui.Viewer {
 								ScaleType:xui.Cover,
 								BorderRoundWidth:30,
 								BackgroundColor:colornames.Lightgrey,
-								Src:"https://fuss10.elemecdn.com/0/6f/e35ff375812e6b0020b6b4e8f9583jpeg.jpeg",
+								Src:"https://fuss10.elemecdn.com/2/11/6535bcfb26e4c79b48ddde44f4b6fjpeg.jpeg",
 							}),
 							xui.NewTextView(&xui.View{
 								Height:30,
@@ -175,7 +176,9 @@ func (p *StartPage1) GetContentView() xui.Viewer {
 								BackgroundColor:colornames.White,
 								Title:"查看详情",
 								Clicker: func(v *xui.View, x, y float64) {
-									v.Window.StartPage("end",nil,false)
+									v.Window.StartPage("end", map[string]interface{}{
+										"url":"https://fuss10.elemecdn.com/2/11/6535bcfb26e4c79b48ddde44f4b6fjpeg.jpeg",
+									},false)
 								},
 							}),
 							&xui.View{
@@ -519,8 +522,16 @@ func (p *StartPage1) GetContentView() xui.Viewer {
 
 type EndPage1 struct {
 	xui.BasePage
+	url string
 }
 
+func (p*EndPage1)Create(data map[string]interface{})  {
+	if data!=nil{
+		p.url = data["url"].(string)
+	}else{
+		p.url = "https://fuss10.elemecdn.com/0/6f/e35ff375812e6b0020b6b4e8f9583jpeg.jpeg"
+	}
+}
 func (p *EndPage1) GetContentView() xui.Viewer {
 	return &xui.View{
 		Width:  500,
@@ -531,7 +542,7 @@ func (p *EndPage1) GetContentView() xui.Viewer {
 				Left:             50,
 				Width:            400,
 				Height:           200,
-				Src:              "https://fuss10.elemecdn.com/0/6f/e35ff375812e6b0020b6b4e8f9583jpeg.jpeg",
+				Src:              p.url,
 				ScaleType:        xui.Cover,
 			}),
 			xui.NewTextView(&xui.View{
