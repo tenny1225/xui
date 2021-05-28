@@ -67,7 +67,7 @@ func (p *StartPage1) GetContentView() xui.Viewer {
 						TextColor:       colornames.Black,
 						Title:           "搜索",
 						Clicker: func(v *xui.View, x, y float64) {
-											v.Window.StartPage("end",nil,false)
+											v.Window.GetTexture2Image()
 						},
 					}),
 				},

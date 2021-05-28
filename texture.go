@@ -97,6 +97,13 @@ func (t *Texture) Draw(c XCanvas, x, y float64,winWidth, winHeight int) {
 
 }
 func (t *Texture) DrawInRetangle(c XCanvas, x, y ,rx,ry, rw,rh float64,winWidth, winHeight int) {
+	tx, ty := c.GetTranslate()
+	x+=tx
+	y+=ty
+
+	rx+=tx
+	ry+=ty
+
 	rcx,rcy:=rx-x,ry-y
 	rcw,rch:=rw,rh
 

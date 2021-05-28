@@ -2,11 +2,8 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="76bdcf5c-1a43-4f2b-a881-e8bd507e724d" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/canvas.go" beforeDir="false" afterPath="$PROJECT_DIR$/canvas.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/example/demo.go" beforeDir="false" afterPath="$PROJECT_DIR$/example/demo.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/example/demo2.go" beforeDir="false" afterPath="$PROJECT_DIR$/example/demo2.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/page.go" beforeDir="false" afterPath="$PROJECT_DIR$/page.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/texture.go" beforeDir="false" afterPath="$PROJECT_DIR$/texture.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/view.go" beforeDir="false" afterPath="$PROJECT_DIR$/view.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/window.go" beforeDir="false" afterPath="$PROJECT_DIR$/window.go" afterDir="false" />
@@ -51,7 +48,8 @@
       <usages-collector id="statistics.file.extensions.open">
         <counts>
           <entry key="c" value="1" />
-          <entry key="go" value="61" />
+          <entry key="go" value="66" />
+          <entry key="jpg" value="15" />
           <entry key="md" value="1" />
           <entry key="mod" value="3" />
           <entry key="png" value="13" />
@@ -62,14 +60,14 @@
         <counts>
           <entry key="C++" value="1" />
           <entry key="DTD" value="3" />
-          <entry key="Go" value="61" />
-          <entry key="Image" value="13" />
+          <entry key="Go" value="66" />
+          <entry key="Image" value="28" />
           <entry key="PLAIN_TEXT" value="2" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.extensions.edit">
         <counts>
-          <entry key="go" value="27936" />
+          <entry key="go" value="28941" />
           <entry key="md" value="4" />
           <entry key="mod" value="34" />
         </counts>
@@ -77,7 +75,7 @@
       <usages-collector id="statistics.file.types.edit">
         <counts>
           <entry key="DTD" value="34" />
-          <entry key="Go" value="27936" />
+          <entry key="Go" value="28941" />
           <entry key="Markdown" value="4" />
         </counts>
       </usages-collector>
@@ -91,32 +89,41 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/example/demo.go">
+      <file pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/window.go">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="343">
-              <caret line="101" column="28" lean-forward="true" selection-start-line="101" selection-start-column="28" selection-end-line="101" selection-end-column="28" />
+            <state relative-caret-position="558">
+              <caret line="362" column="34" selection-start-line="362" selection-start-column="34" selection-end-line="362" selection-end-column="34" />
               <folding>
-                <element signature="e#14#64#0" expanded="true" />
+                <element signature="e#13#167#0" expanded="true" />
               </folding>
             </state>
           </provider>
         </entry>
       </file>
       <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/window.go">
+        <entry file="file://$USER_HOME$/go/go/src/image/geom.go">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="313">
-              <caret line="141" selection-start-line="141" selection-end-line="141" />
+            <state relative-caret-position="217">
+              <caret line="96" column="19" selection-start-line="96" selection-start-column="19" selection-end-line="96" selection-end-column="19" />
             </state>
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/page.go">
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$USER_HOME$/go/gopath/pkg/mod/github.com/fogleman/gg@v1.3.0/context.go">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="363">
-              <caret line="69" column="10" selection-start-line="69" selection-start-column="10" selection-end-line="69" selection-end-column="10" />
+            <state relative-caret-position="-137">
+              <caret line="834" column="19" selection-start-line="834" selection-start-column="19" selection-end-line="834" selection-end-column="19" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/canvas.go">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="299">
+              <caret line="152" selection-start-line="152" selection-end-line="152" />
             </state>
           </provider>
         </entry>
@@ -124,8 +131,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/example/demo2.go">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="418">
-              <caret line="124" column="36" lean-forward="true" selection-start-line="124" selection-start-column="36" selection-end-line="124" selection-end-column="36" />
+            <state relative-caret-position="168">
+              <caret line="65" column="57" lean-forward="true" selection-start-line="65" selection-start-column="57" selection-end-line="65" selection-end-column="57" />
               <folding>
                 <element signature="e#11943#13328#0" />
               </folding>
@@ -136,8 +143,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/view.go">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="247">
-              <caret line="463" column="15" selection-start-line="463" selection-start-column="15" selection-end-line="463" selection-end-column="15" />
+            <state relative-caret-position="-61">
+              <caret line="459" column="6" selection-start-line="459" selection-start-column="6" selection-end-line="459" selection-end-column="6" />
               <folding>
                 <element signature="e#13#178#0" expanded="true" />
               </folding>
@@ -146,19 +153,10 @@
         </entry>
       </file>
       <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/canvas.go">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="2736">
-              <caret line="151" column="13" selection-start-line="151" selection-start-column="13" selection-end-line="151" selection-end-column="13" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/texture.go">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="2394">
-              <caret line="129" column="36" selection-start-line="129" selection-start-column="36" selection-end-line="129" selection-end-column="36" />
+            <state relative-caret-position="128">
+              <caret line="16" selection-start-line="16" selection-end-line="16" />
               <folding>
                 <element signature="e#13#63#0" expanded="true" />
               </folding>
@@ -167,28 +165,19 @@
         </entry>
       </file>
       <file pinned="false" current-in-tab="false">
-        <entry file="file://$USER_HOME$/go/gopath/pkg/mod/github.com/go-gl/gl@v0.0.0-20210426225639-a3bfa832c8aa/v2.1/gl/package.go">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="486229">
-              <caret line="25595" column="5" selection-start-line="25595" selection-start-column="5" selection-end-line="25595" selection-end-column="5" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
         <entry file="file://$USER_HOME$/go/go/src/image/image.go">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="2546">
-              <caret line="136" column="13" selection-start-line="136" selection-start-column="9" selection-end-line="136" selection-end-column="13" />
+            <state relative-caret-position="319">
+              <caret line="71" selection-start-line="71" selection-end-line="71" />
             </state>
           </provider>
         </entry>
       </file>
       <file pinned="false" current-in-tab="false">
-        <entry file="file://$USER_HOME$/go/gopath/pkg/mod/golang.org/x/image@v0.0.0-20210504121937-7319ad40d33e/font/font.go">
+        <entry file="file://$USER_HOME$/go/gopath/pkg/mod/github.com/go-gl/gl@v0.0.0-20210426225639-a3bfa832c8aa/v2.1/gl/package.go">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="5567">
-              <caret line="300" selection-start-line="300" selection-end-line="300" />
+            <state relative-caret-position="462061">
+              <caret line="24608" column="5" selection-start-line="24608" selection-start-column="5" selection-end-line="24608" selection-end-column="5" />
             </state>
           </provider>
         </entry>
@@ -252,13 +241,13 @@
         <option value="$PROJECT_DIR$/example/main.go" />
         <option value="$PROJECT_DIR$/REDME.md" />
         <option value="$PROJECT_DIR$/README.md" />
-        <option value="$PROJECT_DIR$/canvas.go" />
-        <option value="$PROJECT_DIR$/texture.go" />
         <option value="$PROJECT_DIR$/example/demo.go" />
-        <option value="$PROJECT_DIR$/view.go" />
-        <option value="$PROJECT_DIR$/example/demo2.go" />
-        <option value="$PROJECT_DIR$/window.go" />
         <option value="$PROJECT_DIR$/page.go" />
+        <option value="$PROJECT_DIR$/example/demo2.go" />
+        <option value="$PROJECT_DIR$/texture.go" />
+        <option value="$PROJECT_DIR$/canvas.go" />
+        <option value="$PROJECT_DIR$/view.go" />
+        <option value="$PROJECT_DIR$/window.go" />
       </list>
     </option>
   </component>
@@ -269,8 +258,8 @@
     <sorting>DEFINITION_ORDER</sorting>
   </component>
   <component name="ProjectFrameBounds">
-    <option name="x" value="126" />
-    <option name="y" value="46" />
+    <option name="x" value="122" />
+    <option name="y" value="27" />
     <option name="width" value="1658" />
     <option name="height" value="1009" />
   </component>
@@ -293,6 +282,10 @@
               <item name="xui" type="b2602c69:ProjectViewProjectNode" />
               <item name="xui" type="462c0819:PsiDirectoryNode" />
               <item name="example" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="xui" type="b2602c69:ProjectViewProjectNode" />
+              <item name="External Libraries" type="cb654da1:ExternalLibrariesNode" />
             </path>
           </expand>
           <select />
@@ -393,7 +386,7 @@
     </recent_temporary>
   </component>
   <component name="ToolWindowManager">
-    <frame x="126" y="46" width="1658" height="1009" extended-state="0" />
+    <frame x="122" y="27" width="1658" height="1009" extended-state="0" />
     <editor active="true" />
     <layout>
       <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.17450495" />
@@ -401,19 +394,19 @@
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" />
-      <window_info active="true" anchor="bottom" id="Run" order="2" visible="true" weight="0.3616279" />
+      <window_info active="true" anchor="bottom" id="Run" order="2" visible="true" weight="0.08139535" />
       <window_info anchor="bottom" id="Debug" order="3" weight="0.39953542" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
       <window_info anchor="bottom" id="TODO" order="6" />
       <window_info anchor="bottom" id="Database Changes" order="7" show_stripe_button="false" />
       <window_info anchor="bottom" id="Version Control" order="8" />
-      <window_info anchor="bottom" id="Terminal" order="9" weight="0.3151163" />
+      <window_info anchor="bottom" id="Terminal" order="9" weight="0.51744187" />
       <window_info anchor="bottom" id="Event Log" order="10" side_tool="true" />
       <window_info anchor="right" id="Commander" internal_type="SLIDING" order="0" type="SLIDING" weight="0.4" />
       <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
       <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
-      <window_info anchor="right" id="Mongo Explorer" order="3" weight="0.32982674" />
+      <window_info anchor="right" id="Mongo Explorer" order="3" side_tool="true" weight="0.32982674" />
       <window_info anchor="right" id="Database" order="4" side_tool="true" weight="0.32941177" />
     </layout>
   </component>
@@ -442,13 +435,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="817">
           <caret line="43" selection-start-line="43" selection-end-line="43" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$USER_HOME$/go/go/src/image/geom.go">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="425">
-          <caret line="265" column="5" selection-start-line="265" selection-start-column="5" selection-end-line="265" selection-end-column="5" />
         </state>
       </provider>
     </entry>
@@ -524,13 +510,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$USER_HOME$/go/gopath/pkg/mod/github.com/fogleman/gg@v1.3.0/context.go">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="8265">
-          <caret line="449" selection-start-line="449" selection-end-line="449" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/README.md">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="209">
@@ -580,37 +559,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/canvas.go">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="2736">
-          <caret line="151" column="13" selection-start-line="151" selection-start-column="13" selection-end-line="151" selection-end-column="13" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/texture.go">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="2394">
-          <caret line="129" column="36" selection-start-line="129" selection-start-column="36" selection-end-line="129" selection-end-column="36" />
-          <folding>
-            <element signature="e#13#63#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$USER_HOME$/go/gopath/pkg/mod/github.com/go-gl/gl@v0.0.0-20210426225639-a3bfa832c8aa/v2.1/gl/package.go">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="486229">
-          <caret line="25595" column="5" selection-start-line="25595" selection-start-column="5" selection-end-line="25595" selection-end-column="5" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$USER_HOME$/go/go/src/image/image.go">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="2546">
-          <caret line="136" column="13" selection-start-line="136" selection-start-column="9" selection-end-line="136" selection-end-column="13" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$USER_HOME$/go/gopath/pkg/mod/golang.org/x/image@v0.0.0-20210504121937-7319ad40d33e/font/font.go">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="5567">
@@ -628,20 +576,82 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/page.go">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="572">
+          <caret line="68" column="35" lean-forward="true" selection-start-line="68" selection-start-column="35" selection-end-line="68" selection-end-column="35" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$USER_HOME$/go/gopath/pkg/mod/github.com/go-gl/gl@v0.0.0-20210426225639-a3bfa832c8aa/v3.1/gles2/package.go">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="3967">
+          <caret line="5601" column="4" selection-start-line="5601" selection-start-column="4" selection-end-line="5601" selection-end-column="4" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$USER_HOME$/go/gopath/pkg/mod/github.com/go-gl/gl@v0.0.0-20210426225639-a3bfa832c8aa/v2.1/gl/package.go">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="462061">
+          <caret line="24608" column="5" selection-start-line="24608" selection-start-column="5" selection-end-line="24608" selection-end-column="5" />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/example/demo2.go">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="418">
-          <caret line="124" column="36" lean-forward="true" selection-start-line="124" selection-start-column="36" selection-end-line="124" selection-end-column="36" />
+        <state relative-caret-position="168">
+          <caret line="65" column="57" lean-forward="true" selection-start-line="65" selection-start-column="57" selection-end-line="65" selection-end-column="57" />
           <folding>
             <element signature="e#11943#13328#0" />
           </folding>
         </state>
       </provider>
     </entry>
+    <entry file="file://$USER_HOME$/go/gopath/pkg/mod/github.com/fogleman/gg@v1.3.0/context.go">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-137">
+          <caret line="834" column="19" selection-start-line="834" selection-start-column="19" selection-end-line="834" selection-end-column="19" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$USER_HOME$/go/go/src/image/image.go">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="319">
+          <caret line="71" selection-start-line="71" selection-end-line="71" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$USER_HOME$/go/go/src/image/geom.go">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="217">
+          <caret line="96" column="19" selection-start-line="96" selection-start-column="19" selection-end-line="96" selection-end-column="19" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/xz.jpg">
+      <provider selected="true" editor-type-id="images" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/texture.go">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="128">
+          <caret line="16" selection-start-line="16" selection-end-line="16" />
+          <folding>
+            <element signature="e#13#63#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/canvas.go">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="299">
+          <caret line="152" selection-start-line="152" selection-end-line="152" />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/view.go">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="247">
-          <caret line="463" column="15" selection-start-line="463" selection-start-column="15" selection-end-line="463" selection-end-column="15" />
+        <state relative-caret-position="-61">
+          <caret line="459" column="6" selection-start-line="459" selection-start-column="6" selection-end-line="459" selection-end-column="6" />
           <folding>
             <element signature="e#13#178#0" expanded="true" />
           </folding>
@@ -650,15 +660,11 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/window.go">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="313">
-          <caret line="141" selection-start-line="141" selection-end-line="141" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/page.go">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="363">
-          <caret line="69" column="10" selection-start-line="69" selection-start-column="10" selection-end-line="69" selection-end-column="10" />
+        <state relative-caret-position="558">
+          <caret line="362" column="34" selection-start-line="362" selection-start-column="34" selection-end-line="362" selection-end-column="34" />
+          <folding>
+            <element signature="e#13#167#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>

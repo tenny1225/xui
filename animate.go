@@ -44,7 +44,7 @@ func (l*lineDifferentiator) GetCurrent() (float64,float64){
 func (l*lineDifferentiator) Calc() {
 
 	if l.currentX !=l.endX{
-		l.currentX += (l.endX-l.startX)*0.1
+		l.currentX += (l.endX-l.startX)*0.2
 		if l.endX>l.startX&&l.currentX>l.endX{
 			l.currentX = l.endX
 		}
@@ -54,7 +54,7 @@ func (l*lineDifferentiator) Calc() {
 	}
 
 	if l.currentY !=l.endY{
-		l.currentY += (l.endY-l.startY)*0.1
+		l.currentY += (l.endY-l.startY)*0.2
 		if l.endY>l.startY&&l.currentY>l.endY{
 			l.currentY = l.endY
 		}

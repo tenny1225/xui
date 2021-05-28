@@ -19,8 +19,10 @@ type XWindow interface {
 	SetFocus(b bool)
 	getMQ()func(w*xwindow)
 	pushMQ(f func(w*xwindow))
+	UI(f func())
 	RequestLayout()
 	Reload()
+	GetTexture2Image()*image.RGBA
 }
 
 func NewWindow(name string,w, h int, c XContext) XWindow {
@@ -65,6 +67,13 @@ type xwindow struct {
 	locker       sync.RWMutex
 	offsetX float64
 
+}
+func (w *xwindow)UI(f func()){
+	w.locker.Lock()
+	defer w.locker.Unlock()
+	w.mqQuenues = append(w.mqQuenues, func(w *xwindow) {
+		f()
+	})
 }
 func (w *xwindow) getMQ()func(w*xwindow){
 	w.locker.Lock()
@@ -121,6 +130,7 @@ func (w *xwindow) StartPage(r string,data map[string]interface{},isclear bool) {
 	go w.pageTo(r,data,isclear)
 }
 func (w *xwindow)PopPage(){
+	w.rgba = w.GetTexture2Image()
 
 	w.pushMQ(func(w*xwindow) {
 		if len(w.pages)==0{
@@ -320,9 +330,53 @@ func (w *xwindow) pageTo(r string,data map[string]interface{},b bool) error {
 				w.pages[len(w.pages)-1].getRoot().Event(px, py, Out)
 			}
 
+			if  w.leaveAnimate!=nil&&w.rgba!=nil{
+				dx,dy:=w.leaveAnimate.GetCurrent()
+
+				width,height:=w.GetSize()
+				rx,ry,rx1,ry1:=dx,dy,dx+float64(width),dy+float64(height)
+				if rx<0{
+					rx = 0
+				}
+				if ry<0{
+					ry=0
+				}
+				if rx>float64(width){
+					rx = float64(width)
+				}
+				if ry>float64(height){
+					ry = float64(height)
+				}
+
+				if rx1<0{
+					rx1 = 0
+				}
+				if ry1<0{
+					ry1=0
+				}
+				if rx1>float64(width){
+					rx1 = float64(width)
+				}
+				if ry1>float64(height){
+					ry1 = float64(height)
+				}
+				if rx1>rx&&ry1>ry{
+					canvas.Save()
+					canvas.DrawImageInRetangle(dx,dy,w.rgba,rx,ry,rx1-rx,ry1-ry)
+					canvas.Restore()
+				}
+
+			}
+
+			dx,dy:=0.0,0.0
+			if  w.enterAnimate!=nil{
+				dx,dy = w.enterAnimate.GetCurrent()
+			}
+			canvas.SetTranslate(dx,dy)
+			canvas.Save()
 			w.pages[len(w.pages)-1].getRoot().render(canvas)
-			//canvas.DrawRect(0,0,100,100,colornames.Blue)
-			//canvas.DrawImageInRetangle(0,0,im,0,0,300,300)
+			canvas.Restore()
+			canvas.SetTranslate(0,0)
 
 
 
@@ -337,6 +391,7 @@ func (w *xwindow) pageTo(r string,data map[string]interface{},b bool) error {
 			}
 			if  w.leaveAnimate!=nil&&w.leaveAnimate.IsDone(){
 				w.leaveAnimate = nil
+				//w.rgba = nil
 
 			}
 			if w.enterAnimate!=nil{
@@ -357,9 +412,24 @@ func (w *xwindow) pageTo(r string,data map[string]interface{},b bool) error {
 			}
 			w.pages =make([]Page,0)
 		}
+		w.rgba = w.GetTexture2Image()
 
 		w.initCurentPage(r,data)
 	}
 
 	return nil
+}
+func (w*xwindow)GetTexture2Image()*image.RGBA  {
+	width,height:=w.GetSize()
+	gl.PixelStorei(gl.UNPACK_ALIGNMENT, 4);
+	rgba:=image.NewRGBA(image.Rect(0,0,width,height))
+	gl.ReadPixels(0,0,int32(width),int32(height),gl.RGBA,gl.UNSIGNED_BYTE,gl.Ptr(rgba.Pix))
+	dist:=image.NewRGBA(image.Rect(0,0,width,height))
+	for i:=0;i< rgba.Bounds().Max.X;i++{
+		for j:=0;j< rgba.Bounds().Max.Y;j++{
+			c:=rgba.At(i,j)
+			dist.Set(i,rgba.Bounds().Max.Y-j,c)
+		}
+	}
+	return dist
 }

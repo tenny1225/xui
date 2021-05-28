@@ -398,15 +398,7 @@ func (v *View) SetScroll(s float64) {
 	}
 	//v.RequestLayout()
 
-	var f func(view *View)
 
-	f = func(view *View) {
-		view.rgba = nil
-		if view.Parent != nil {
-			f(view.Parent)
-		}
-	}
-	f(v)
 }
 func (v *View) GetMeasureSize() (float64, float64) {
 
@@ -1042,7 +1034,9 @@ func (v *EditView) Focus(x, y float64, b bool) bool {
 		}
 
 	}
-	v.Recycle()
+	v.Window.UI(func() {
+		v.Recycle()
+	})
 	return b
 }
 func (v *EditView) Draw(canvas XCanvas) {

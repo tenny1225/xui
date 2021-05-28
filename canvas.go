@@ -107,6 +107,11 @@ func (z *xcanvas) DrawLine(x1, y1, x2, y2 float64, p XPaint) {
 }
 
 func (z *xcanvas) DrawRect(x, y, w, h float64, c color.Color) {
+	tx,ty:=z.GetTranslate()
+
+	x+=tx
+	y+=ty
+
 	winWidth, winHeight:=z.window.GetSize()
 	x, y = AppCoordinate2OpenGL(winWidth, winHeight, x, y)
 	w, h = AppWidthHeight2OpenGL(winWidth, winHeight, (float64(w)), (float64(h)))
