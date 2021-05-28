@@ -77,7 +77,7 @@ type Viewer interface {
 type View struct {
 	id string
 	Parent           *View
-	BackgroundColor  color.Color
+	BackgroundColor  *color.RGBA
 	PrimaryColor     color.Color
 	AccentColor      color.Color
 	Children         []Viewer
@@ -552,7 +552,7 @@ func (v *View) render(canvas XCanvas) {
 				x0, y0 := w-10, (h-scrollBarWidth)*rate
 				x1, y1 := x0+10, scrollBarWidth*(1-rate)+rate*h
 
-				canvas.DrawRect(l+x0, t+y0, x1-x0, y1-y0, colornames.Black)
+				canvas.DrawRect(l+x0, t+y0, x1-x0, y1-y0, &colornames.Lightgrey)
 
 			} else if v.Direction == Horizontal {
 				rate := math.Abs(v.ScrollLength / v.MaxScrollLength)
@@ -563,7 +563,7 @@ func (v *View) render(canvas XCanvas) {
 				x0, y0 := (w-scrollBarWidth)*rate, h-10
 				x1, y1 := scrollBarWidth*(1-rate)+rate*w, y0+10
 
-				canvas.DrawRect(l+x0, t+y0, x1-x0, y1-y0,  colornames.Black)
+				canvas.DrawRect(l+x0, t+y0, x1-x0, y1-y0,  &colornames.Lightgrey)
 			}
 		}
 
@@ -789,7 +789,7 @@ func NewButtonView(v *View) Viewer {
 	view.ShouldMeasure = true
 	view.Backgrounder = view.DrawBackground
 	if view.BackgroundColor == nil {
-		view.BackgroundColor = colornames.Green
+		view.BackgroundColor = &colornames.Green
 	}
 	return v
 }

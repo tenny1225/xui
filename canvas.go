@@ -19,7 +19,7 @@ type XCanvas interface {
 	DrawCircle(dx, dy, radius float64, p XPaint)
 	DrawLine(x1, y1, x2, y2 float64, p XPaint)
 	DrawText(str string,x, y ,ax,ay ,mw,mh float64, p XPaint)
-	DrawRect(x1, y1, w, h float64, c color.Color)
+	DrawRect(x1, y1, w, h float64, c *color.RGBA)
 	DrawImage(x, y float64, img image.Image)
 	DrawImageInRetangle(x, y float64, img image.Image,rx,ry,rw,rh float64)
 
@@ -106,7 +106,7 @@ func (z *xcanvas) DrawLine(x1, y1, x2, y2 float64, p XPaint) {
 	t.Draw(z, math.Min(x1, x2), math.Min(y1, y2),ww,wh);
 }
 
-func (z *xcanvas) DrawRect(x, y, w, h float64, c color.Color) {
+func (z *xcanvas) DrawRect(x, y, w, h float64, c *color.RGBA) {
 	tx,ty:=z.GetTranslate()
 
 	x+=tx
@@ -116,9 +116,12 @@ func (z *xcanvas) DrawRect(x, y, w, h float64, c color.Color) {
 	x, y = AppCoordinate2OpenGL(winWidth, winHeight, x, y)
 	w, h = AppWidthHeight2OpenGL(winWidth, winHeight, (float64(w)), (float64(h)))
 	//gl.Clear(gl.COLOR_BUFFER_BIT)
-	r,g,b,_:=c.RGBA()
+	r,g,b:=c.R,c.G,c.B
 
-	gl.Color3f(float32(r)/255,float32(g)/255,float32(b)/255)
+
+
+
+	gl.Color3f(float32(r)/255.0,float32(g)/255.0,float32(b)/255.0)
 	gl.Rectf(float32(x),float32(y-h),float32(x+w),float32(y))
 	gl.Color3f(1,1,1)
 

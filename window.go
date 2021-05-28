@@ -226,7 +226,8 @@ func (w *xwindow) pageTo(r string,data map[string]interface{},b bool) error {
 		gl.Lightfv(gl.LIGHT0, gl.DIFFUSE, &diffuse[0])
 		gl.Lightfv(gl.LIGHT0, gl.POSITION, &lightPosition[0])
 		gl.Enable(gl.LIGHT0)
-
+		gl.LightModeli(gl.FRONT, gl.AMBIENT_AND_DIFFUSE)
+		gl.Enable( gl.COLOR_MATERIAL)
 		gl.MatrixMode(gl.PROJECTION)
 		gl.LoadIdentity()
 		//gl.Frustum(-1, 1, -1, 1, 1.0, 5.0)
@@ -295,6 +296,7 @@ func (w *xwindow) pageTo(r string,data map[string]interface{},b bool) error {
 
 
 		})
+
 		window.SetMouseButtonCallback(func(win *glfw.Window, button glfw.MouseButton, action glfw.Action, mods glfw.ModifierKey) {
 			if button == glfw.MouseButtonLeft &&w.enterAnimate==nil&&w.leaveAnimate==nil{
 				x, y := win.GetCursorPos()
@@ -374,7 +376,11 @@ func (w *xwindow) pageTo(r string,data map[string]interface{},b bool) error {
 			}
 			canvas.SetTranslate(dx,dy)
 			canvas.Save()
+
 			w.pages[len(w.pages)-1].getRoot().render(canvas)
+
+
+
 			canvas.Restore()
 			canvas.SetTranslate(0,0)
 
