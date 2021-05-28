@@ -3,12 +3,8 @@
   <component name="ChangeListManager">
     <list default="true" id="76bdcf5c-1a43-4f2b-a881-e8bd507e724d" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/canvas.go" beforeDir="false" afterPath="$PROJECT_DIR$/canvas.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/example/demo.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/example/demo1.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/example/demo2.go" beforeDir="false" afterPath="$PROJECT_DIR$/example/demo2.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/view.go" beforeDir="false" afterPath="$PROJECT_DIR$/view.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/window.go" beforeDir="false" afterPath="$PROJECT_DIR$/window.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/xz.jpg" beforeDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -52,7 +48,7 @@
           <entry key="c" value="1" />
           <entry key="go" value="76" />
           <entry key="jpg" value="15" />
-          <entry key="md" value="1" />
+          <entry key="md" value="2" />
           <entry key="mod" value="3" />
           <entry key="png" value="13" />
           <entry key="sum" value="1" />
@@ -64,21 +60,22 @@
           <entry key="DTD" value="3" />
           <entry key="Go" value="76" />
           <entry key="Image" value="28" />
+          <entry key="Markdown" value="1" />
           <entry key="PLAIN_TEXT" value="2" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.extensions.edit">
         <counts>
-          <entry key="go" value="29223" />
-          <entry key="md" value="4" />
+          <entry key="go" value="29227" />
+          <entry key="md" value="109" />
           <entry key="mod" value="34" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.types.edit">
         <counts>
           <entry key="DTD" value="34" />
-          <entry key="Go" value="29223" />
-          <entry key="Markdown" value="4" />
+          <entry key="Go" value="29227" />
+          <entry key="Markdown" value="109" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.go.postfix.template.usages.trigger">
@@ -94,7 +91,7 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/window.go">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="269">
+            <state relative-caret-position="7315">
               <caret line="385" lean-forward="true" selection-start-line="385" selection-end-line="385" />
               <folding>
                 <element signature="e#13#167#0" expanded="true" />
@@ -104,16 +101,32 @@
         </entry>
       </file>
       <file pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/README.md">
+          <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
+            <state split_layout="SPLIT">
+              <first_editor relative-caret-position="132">
+                <caret line="8" lean-forward="true" selection-start-line="8" selection-end-line="8" />
+              </first_editor>
+              <second_editor />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/example/demo2.go">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="659">
-              <caret line="354" column="22" selection-start-line="354" selection-start-column="22" selection-end-line="354" selection-end-column="22" />
+            <state relative-caret-position="336">
+              <caret line="72" column="18" lean-forward="true" selection-start-line="72" selection-start-column="18" selection-end-line="72" selection-end-column="18" />
               <folding>
                 <element signature="e#1972#3392#0" />
                 <element signature="e#3408#4919#0" />
-                <element signature="e#4842#6306#0" />
+                <element signature="e#4840#6213#0" />
                 <element signature="e#6322#7786#0" />
                 <element signature="e#7802#9266#0" />
+                <element signature="e#9099#10563#0" />
+                <element signature="e#10579#11952#0" />
+                <element signature="e#11968#13432#0" />
+                <element signature="e#13448#14821#0" />
               </folding>
             </state>
           </provider>
@@ -152,8 +165,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/view.go">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="174">
-              <caret line="791" column="32" selection-start-line="791" selection-start-column="32" selection-end-line="791" selection-end-column="32" />
+            <state relative-caret-position="633">
+              <caret line="575" column="5" lean-forward="true" selection-start-line="575" selection-start-column="5" selection-end-line="575" selection-end-column="5" />
               <folding>
                 <element signature="e#13#178#0" expanded="true" />
               </folding>
@@ -248,15 +261,15 @@
         <option value="$PROJECT_DIR$/context.go" />
         <option value="$PROJECT_DIR$/example/main.go" />
         <option value="$PROJECT_DIR$/REDME.md" />
-        <option value="$PROJECT_DIR$/README.md" />
         <option value="$PROJECT_DIR$/page.go" />
         <option value="$PROJECT_DIR$/texture.go" />
         <option value="$PROJECT_DIR$/animate.go" />
-        <option value="$PROJECT_DIR$/view.go" />
         <option value="$PROJECT_DIR$/canvas.go" />
         <option value="$PROJECT_DIR$/window.go" />
         <option value="$PROJECT_DIR$/example/demo.go" />
         <option value="$PROJECT_DIR$/example/demo2.go" />
+        <option value="$PROJECT_DIR$/view.go" />
+        <option value="$PROJECT_DIR$/README.md" />
       </list>
     </option>
   </component>
@@ -267,8 +280,8 @@
     <sorting>DEFINITION_ORDER</sorting>
   </component>
   <component name="ProjectFrameBounds">
-    <option name="x" value="67" />
-    <option name="y" value="57" />
+    <option name="x" value="109" />
+    <option name="y" value="46" />
     <option name="width" value="1658" />
     <option name="height" value="1009" />
   </component>
@@ -395,15 +408,15 @@
     </recent_temporary>
   </component>
   <component name="ToolWindowManager">
-    <frame x="67" y="57" width="1658" height="1009" extended-state="0" />
+    <frame x="109" y="46" width="1658" height="1009" extended-state="0" />
     <editor active="true" />
     <layout>
-      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.17450495" />
+      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.17450495" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" />
-      <window_info active="true" anchor="bottom" id="Run" order="2" visible="true" weight="0.12790698" />
+      <window_info anchor="bottom" id="Run" order="2" visible="true" weight="0.12790698" />
       <window_info anchor="bottom" id="Debug" order="3" weight="0.39953542" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
@@ -502,13 +515,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="3211">
           <caret line="174" selection-start-line="174" selection-end-line="174" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/README.md">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="209">
-          <caret line="11" column="31" lean-forward="true" selection-start-line="11" selection-start-column="31" selection-end-line="11" selection-end-column="31" />
         </state>
       </provider>
     </entry>
@@ -630,16 +636,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/view.go">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="174">
-          <caret line="791" column="32" selection-start-line="791" selection-start-column="32" selection-end-line="791" selection-end-column="32" />
-          <folding>
-            <element signature="e#13#178#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/example/demo1.go">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="2465">
@@ -664,9 +660,37 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/example/demo2.go">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="336">
+          <caret line="72" column="18" lean-forward="true" selection-start-line="72" selection-start-column="18" selection-end-line="72" selection-end-column="18" />
+          <folding>
+            <element signature="e#1972#3392#0" />
+            <element signature="e#3408#4919#0" />
+            <element signature="e#4840#6213#0" />
+            <element signature="e#6322#7786#0" />
+            <element signature="e#7802#9266#0" />
+            <element signature="e#9099#10563#0" />
+            <element signature="e#10579#11952#0" />
+            <element signature="e#11968#13432#0" />
+            <element signature="e#13448#14821#0" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/view.go">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="633">
+          <caret line="575" column="5" lean-forward="true" selection-start-line="575" selection-start-column="5" selection-end-line="575" selection-end-column="5" />
+          <folding>
+            <element signature="e#13#178#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/window.go">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="269">
+        <state relative-caret-position="7315">
           <caret line="385" lean-forward="true" selection-start-line="385" selection-end-line="385" />
           <folding>
             <element signature="e#13#167#0" expanded="true" />
@@ -674,17 +698,18 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/example/demo2.go">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="659">
-          <caret line="354" column="22" selection-start-line="354" selection-start-column="22" selection-end-line="354" selection-end-column="22" />
-          <folding>
-            <element signature="e#1972#3392#0" />
-            <element signature="e#3408#4919#0" />
-            <element signature="e#4842#6306#0" />
-            <element signature="e#6322#7786#0" />
-            <element signature="e#7802#9266#0" />
-          </folding>
+    <entry file="file://$PROJECT_DIR$/README.md">
+      <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
+        <state split_layout="SPLIT">
+          <first_editor relative-caret-position="132">
+            <caret line="8" lean-forward="true" selection-start-line="8" selection-end-line="8" />
+          </first_editor>
+          <second_editor />
+        </state>
+      </provider>
+      <provider editor-type-id="text-editor">
+        <state relative-caret-position="209">
+          <caret line="11" column="31" lean-forward="true" selection-start-line="11" selection-start-column="31" selection-end-line="11" selection-end-column="31" />
         </state>
       </provider>
     </entry>
