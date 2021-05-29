@@ -1,4 +1,4 @@
-module xui
+module github.com/tenny1225/xui
 
 go 1.13
 
