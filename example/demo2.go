@@ -2,7 +2,7 @@ package main
 
 import (
 	"golang.org/x/image/colornames"
-	"xui"
+	"github.com/tenny1225/xui"
 )
 
 type StartPage1 struct {
