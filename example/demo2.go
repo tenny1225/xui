@@ -635,7 +635,7 @@ func (p *EndPage1) GetContentView() xui.Viewer {
 func main() {
 	ctx := xui.NewXContext()
 	ctx.Run(func() {
-		w := xui.NewWindow("测试", 500, 500, ctx)
+		w := xui.NewWindow("测试", 500,500,500, 500, ctx)
 		w.AddRoute("start", &StartPage1{})
 		w.AddRoute("end", &EndPage1{})
 		w.StartPage("start", nil, false)
