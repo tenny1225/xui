@@ -17,6 +17,7 @@ GLFW C library source is included and built automatically as part of the Go pack
 - On CentOS/Fedora-like Linux distributions, you need `libX11-devel` `libXcursor-devel` `libXrandr-devel` `libXinerama-devel` `mesa-libGL-devel` `libXi-devel` `libXxf86vm-devel` packages.
 See here for full details.
 Go 1.4+ is required on Windows (otherwise you must use MinGW v4.8.1 exactly, see Go issue 8811).
+windows的mingw安装可以参考这个https://www.cnblogs.com/jisongxie/p/10761274.html
 
 ``
 go get -u github.com/go-gl/glfw/v3.3/glfw
