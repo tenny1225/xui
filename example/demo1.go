@@ -69,7 +69,7 @@ func (p *DemoPage) GetContentView() xui.Viewer {
 func main() {
 	ctx := xui.NewXContext()
 	ctx.Run(func() {
-		w := xui.NewWindow("测试",500,500, 0, 0, ctx)
+		w := xui.NewWindow("测试",500,500, 0, 0,true, ctx)
 		w.AddRoute("start", &DemoPage{})
 		w.StartPage("start", nil, false)
 	})
