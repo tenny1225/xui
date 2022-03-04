@@ -25,12 +25,14 @@ type XWindow interface {
 	GetTexture2Image()*image.RGBA
 }
 
-func NewWindow(name string,w, h int, c XContext) XWindow {
+func NewWindow(name string,w, h,x,y int,resizable bool, c XContext) XWindow {
 	ctx, cancel := context.WithCancel(c.getCtx())
 	c.addWait()
 
 	win := &xwindow{
 		name:      name,
+		x:x,
+		y:y,
 		width:     w,
 		height:    h,
 		router:    make(map[string]Page),
@@ -40,6 +42,7 @@ func NewWindow(name string,w, h int, c XContext) XWindow {
 		pages:     make([]Page,0),
 		mqQuenues: make([]func(w*xwindow),0),
 		locker:    sync.RWMutex{},
+		resizable:resizable,
 	}
 	go func(w XWindow, ctx context.Context) {
 		<-ctx.Done()
@@ -56,6 +59,8 @@ type xwindow struct {
 	window       *glfw.Window
 	width        int
 	height       int
+	x int
+	y int
 	router       map[string]Page
 	pages        []Page
 	mqQuenues    []func(w*xwindow)
@@ -65,7 +70,7 @@ type xwindow struct {
 	enterAnimate Differentiator
 	rgba         image.Image
 	locker       sync.RWMutex
-	offsetX float64
+	resizable bool
 
 }
 func (w *xwindow)UI(f func()){
@@ -97,6 +102,7 @@ func (w *xwindow) pushMQ(f func(w*xwindow)){
 }
 func (w *xwindow) Close() {
 	if !w.isClose {
+		w.window.Destroy()
 		w.cancel()
 		w.isClose = true
 		w.context.windowDone()
@@ -200,14 +206,19 @@ func (w *xwindow) pageTo(r string,data map[string]interface{},b bool) error {
 			panic(err)
 		}
 		defer glfw.Terminate()
-		//glfw.WindowHint(glfw.Resizable, glfw.False)
+		if !w.resizable{
+			glfw.WindowHint(glfw.Resizable, glfw.False)
+		}
+		glfw.WindowHint(glfw.ScaleToMonitor, glfw.False)
 		glfw.WindowHint(glfw.ContextVersionMajor, 2)
 		glfw.WindowHint(glfw.ContextVersionMinor, 1)
+
 
 		window, err := glfw.CreateWindow(w.width, w.height, w.name, nil, nil)
 		if err != nil {
 			panic(err)
 		}
+		window.SetPos(w.x,w.y)
 		w.window = window
 
 		window.Restore()
@@ -273,7 +284,7 @@ func (w *xwindow) pageTo(r string,data map[string]interface{},b bool) error {
 		window.SetScrollCallback(func(win *glfw.Window, x float64, y float64) {
 			rootView:=w.pages[len(w.pages)-1].getRoot()
 			if rootView.currentPoint != nil&&w.enterAnimate==nil&&w.leaveAnimate==nil {
-				rootView.Scroll(rootView.currentPoint[0], rootView.currentPoint[1], y)
+				rootView.Scroll(rootView.currentPoint[0], rootView.currentPoint[1], y*15)
 				//w.offsetX+=y*22
 			}
 
@@ -281,17 +292,19 @@ func (w *xwindow) pageTo(r string,data map[string]interface{},b bool) error {
 
 		window.SetCursorPosCallback(func(win *glfw.Window, xpos float64, ypos float64) {
 			if w.enterAnimate==nil&&w.leaveAnimate==nil{
-				rootView:=w.pages[len(w.pages)-1].getRoot()
+				//rootView:=w.pages[len(w.pages)-1].getRoot()
 				x, y := win.GetCursorPos()
-				l, t := w.pages[len(w.pages)-1].getRoot().getPosition()
-				width,height:=rootView.GetSize()
+				//l, t := w.pages[len(w.pages)-1].getRoot().getPosition()
+				//width,height:=rootView.GetSize()
 
-				if x >= l && x <= l+float64(width) && y >= t && y <= t+float64(height) {
-					w.pages[len(w.pages)-1].getRoot().Event(x, y, Hover)
-					w.pages[len(w.pages)-1].getRoot().currentPoint = []float64{x, y}
-				} else {
-					w.pages[len(w.pages)-1].getRoot().currentPoint = nil
-				}
+				//if x >= l && x <= l+float64(width) && y >= t && y <= t+float64(height) {
+				//	w.pages[len(w.pages)-1].getRoot().Event(x, y, Hover)
+				//	w.pages[len(w.pages)-1].getRoot().currentPoint = []float64{x, y}
+				//} else {
+				//	w.pages[len(w.pages)-1].getRoot().currentPoint = nil
+				//}
+				w.pages[len(w.pages)-1].getRoot().Event(x, y, Hover)
+				w.pages[len(w.pages)-1].getRoot().currentPoint = []float64{x, y}
 			}
 
 
@@ -308,10 +321,15 @@ func (w *xwindow) pageTo(r string,data map[string]interface{},b bool) error {
 				} else if action == glfw.Release {
 					ct = Up
 				}
-				if x >= l && x <= l+float64(width) && y >= t && y <= t+float64(height) {
+				if ct==Down{
+					if x >= l && x <= l+float64(width) && y >= t && y <= t+float64(height) {
 
+						w.pages[len(w.pages)-1].getRoot().Event(x, y, ct)
+					}
+				}else{
 					w.pages[len(w.pages)-1].getRoot().Event(x, y, ct)
 				}
+
 
 			}
 		})
@@ -326,11 +344,7 @@ func (w *xwindow) pageTo(r string,data map[string]interface{},b bool) error {
 			}
 			gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
 			gl.ClearColor(1, 1, 1, 0)
-			width, height := window.GetSize()
-			px, py := window.GetCursorPos()
-			if px < 0 || px > float64(width) || py < 0 || py > float64(height) {
-				w.pages[len(w.pages)-1].getRoot().Event(px, py, Out)
-			}
+
 
 			if  w.leaveAnimate!=nil&&w.rgba!=nil{
 				dx,dy:=w.leaveAnimate.GetCurrent()

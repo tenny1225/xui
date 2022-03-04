@@ -11,11 +11,13 @@ type Texture struct {
 	Height  int
 	IsAlpha bool
 	texture uint32
+	ScaleX float64
+	ScaleY float64
 }
 
 func NewTexture(rgba *image.RGBA) (*Texture) {
 	p := rgba.Bounds().Size()
-	t := &Texture{Rgba: rgba, Width: p.X, Height: p.Y,IsAlpha:true}
+	t := &Texture{Rgba: rgba, Width: p.X, Height: p.Y,IsAlpha:true,ScaleX:1,ScaleY:1}
 
 	t.init()
 	return t
@@ -73,11 +75,13 @@ func (t *Texture) Draw(c XCanvas, x, y float64,winWidth, winHeight int) {
 
 	gl.MatrixMode(gl.MODELVIEW)
 	gl.LoadIdentity()
+	gl.Scaled(t.ScaleX, t.ScaleY, 1)
 
 	gl.BindTexture(gl.TEXTURE_2D, t.texture)
 	gl.LineWidth(0)
 	gl.PointSize(0)
 	gl.Begin(gl.QUADS)
+
 
 	//gl.Normal3f(float32(x), float32(y-h), 0) //
 	gl.TexCoord2f(1, 1)
@@ -122,11 +126,13 @@ func (t *Texture) DrawInRetangle(c XCanvas, x, y ,rx,ry, rw,rh float64,winWidth,
 
 	gl.MatrixMode(gl.MODELVIEW)
 	gl.LoadIdentity()
+	gl.Scaled(t.ScaleX, t.ScaleY, 1)
 
 	gl.BindTexture(gl.TEXTURE_2D, t.texture)
 	gl.LineWidth(0)
 	gl.PointSize(0)
 	gl.Begin(gl.QUADS)
+
 
 
 	gl.TexCoord2f(AppCoordinate2Texture(rw,rh,rcx+rcw,rcy+rch))//1,1

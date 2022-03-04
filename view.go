@@ -2,6 +2,7 @@ package xui
 
 import (
 	"github.com/fogleman/gg"
+	"github.com/google/uuid"
 	"golang.org/x/image/colornames"
 	"golang.org/x/image/font"
 	"image"
@@ -38,7 +39,7 @@ type Viewer interface {
 
 	measure(w, h float64) (float64, float64)
 	setSize(w, h float64)
-
+	setWindow(w XWindow)
 	getSettingSize() (float64, float64)
 	getPosition() (float64, float64)
 	setCurrentPosition(x, y float64)
@@ -72,6 +73,9 @@ type Viewer interface {
 	SetChildCount(c int)
 	SetFocus(x, y float64, b bool) bool
 	Recycle()
+	DrawRect(c XCanvas,x,y ,w,h float64,color *color.RGBA)
+	DrawImage(c XCanvas,x,y float64,img image.Image)
+	DrawCircle(c XCanvas,x,y ,r float64,color *color.RGBA)
 }
 
 type View struct {
@@ -93,6 +97,7 @@ type View struct {
 	Direction        Direction
 	ScrollLength     float64
 	MaxScrollLength  float64
+	ScrollingDistance float64
 	LineCount        int
 	FontSize         int
 	FontPath         string
@@ -101,8 +106,14 @@ type View struct {
 	currentLeft      float64
 	currentTop       float64
 
+
 	Left          float64
 	Top           float64
+	Right float64
+	Bottom float64
+	WidthRatio float64
+	HeightRatio float64
+
 	Title         string
 	ShouldMeasure bool
 	Drawer        func(canvas XCanvas)
@@ -132,7 +143,10 @@ type View struct {
 	isDynamicRender bool
 	childCount      int
 }
-
+func (v*View)setWindow(w XWindow){
+	v.Window=w
+	v.id = uuid.New().String()
+}
 func (v*View)getId()string  {
 	return v.id
 }
@@ -160,6 +174,8 @@ func (v *View) setRenderPosition() {
 
 		left+=l.Left
 		top+=l.Top
+
+
 		if l.Parent!=nil{
 			if l.Parent.Direction==Vertical{
 
@@ -168,13 +184,17 @@ func (v *View) setRenderPosition() {
 				if list!=nil{
 					for _,c:=range list{
 
-						if c==l{
+						if c.getId()==l.id{
 							break
 						}
 						_,h:=c.GetSize()
-						top+=h
+						_,t:=c.getPosition()
+						top+=h+t
+
+
 					}
 				}
+
 
 			}else if l.Parent.Direction==Horizontal{
 				left+=l.Parent.ScrollLength
@@ -182,15 +202,21 @@ func (v *View) setRenderPosition() {
 				if list!=nil{
 					for _,c:=range list{
 
-						if c==l{
+						if c.getId()==l.id{
 							break
 						}
 						w,_:=c.GetSize()
-						left+=w
+						l,_:=c.getPosition()
+						left+=w+l
 					}
 				}
+
 			}
+
 			l = l.Parent
+
+			left+=l.PaddingLeft
+			top+=l.PaddingTop
 		}else{
 			break
 		}
@@ -198,8 +224,10 @@ func (v *View) setRenderPosition() {
 	v.setCurrentPosition(left,top)
 }
 func (v *View) Recycle() {
-	v.background = nil
-	v.rgba = nil
+	v.Window.UI(func() {
+		v.background = nil
+		v.rgba = nil
+	})
 }
 func (v *View) setCurrentPosition(x, y float64) {
 	v.currentLeft, v.currentTop = x, y
@@ -223,6 +251,31 @@ func (v *View) getBackground() *image.RGBA {
 }
 func (v *View) setBackground(rgba *image.RGBA) {
 	v.background = rgba
+}
+func (v *View)DrawCircle(c XCanvas,x,y ,r float64,color *color.RGBA){
+	l, t := v.GetCurrentPosition()
+	x1, y1, x2, y2 := v.getRenderRect()
+	if x2>x1&&y2>y1{
+		c.DrawCircle(x+l, y+t, r, color)
+	}
+}
+func (v *View)DrawRect(c XCanvas,x,y ,w,h float64,color *color.RGBA){
+	l, t := v.GetCurrentPosition()
+	x1, y1, x2, y2 := v.getRenderRect()
+	if x2>x1&&y2>y1{
+		c.DrawRect(math.Max(x+l,x1), math.Max(y+t,y1), math.Min(w,x2-x1), math.Min(h,y2-y1), color)
+	}
+
+}
+func (v *View)DrawImage(c XCanvas,x,y float64,img image.Image){
+	l, t := v.GetCurrentPosition()
+	x1, y1, x2, y2 := v.getRenderRect()
+	//x2,y2=x2-v.PaddingRight,y2-v.PaddingBottom
+	//x1,y1=x1-v.PaddingLeft,y1-v.PaddingTop
+	if x2>x1&&y2>y1{
+		c.DrawImageInRetangle(l+x, t+y, img, x1, y1, x2-x1, y2-y1)
+	}
+
 }
 func (v *View) measure(mw, mh float64) (float64, float64) {
 
@@ -262,6 +315,7 @@ func (v *View) measure(mw, mh float64) (float64, float64) {
 			}
 		}
 
+
 		if v.Width > 0 {
 			width = v.Width
 		}
@@ -274,18 +328,29 @@ func (v *View) measure(mw, mh float64) (float64, float64) {
 		if v.Height == FULL_PARENT {
 			height = winHeight
 		}
-		if height > 0 && v.Direction == Vertical {
-			v.MaxScrollLength = height - max
-		}
-		if width > 0 && v.Direction == Horizontal {
-			v.MaxScrollLength = width - max
-		}
+
 		if v.MaxScrollLength > 0 {
 			v.MaxScrollLength = 0
 		}
-		return width, height
+		if v.WidthRatio>0{
+			width *=v.WidthRatio
+		}
+		if v.HeightRatio>0{
+			height *=v.HeightRatio
+		}
+		width,height= width-v.Right, height-v.Bottom
+		if  v.Direction == Vertical {
+			v.MaxScrollLength = height - max
+
+		} else if  v.Direction == Horizontal {
+			v.MaxScrollLength = width - max
+		}
+		if v.MaxScrollLength>0{
+			v.MaxScrollLength = 0
+		}
+		return  width,height
 	}
-	return v.Width, v.Height
+
 
 }
 func (v *View) setParent(view *View) {
@@ -396,16 +461,16 @@ func (v *View) SetScroll(s float64) {
 	} else if v.ScrollLength > 0 {
 		v.ScrollLength = 0
 	}
-	//v.RequestLayout()
 
 
 }
+
 func (v *View) GetMeasureSize() (float64, float64) {
 
 	w := v.Width
 	h := v.Height
 
-	if (w == AUTO || w == FULL_PARENT) && v.Parent != nil {
+	if (w == AUTO ) && v.Parent != nil {
 		if v.Parent.Direction == Horizontal {
 			w = AUTO_SCOLL_PARENT
 		} else {
@@ -413,13 +478,23 @@ func (v *View) GetMeasureSize() (float64, float64) {
 		}
 
 	}
-	if (h == AUTO || h == FULL_PARENT) && v.Parent != nil {
+	if (h == AUTO) && v.Parent != nil {
 		if v.Parent.Direction == Vertical {
 			h = AUTO_SCOLL_PARENT
 		} else {
 			_, h = v.Parent.GetMeasureSize()
 		}
 
+	}
+	if w==FULL_PARENT{
+		if v.Parent!=nil{
+			w,_ = v.Parent.GetMeasureSize()
+		}
+	}
+	if h==FULL_PARENT{
+		if v.Parent!=nil{
+			_,h = v.Parent.GetMeasureSize()
+		}
 	}
 
 	return w, h
@@ -459,6 +534,10 @@ func (v *View) init(w XWindow) {
 	v.ShouldMeasure = true
 	v.rgba = nil
 	v.background = nil
+	v.MaxScrollLength = 0
+	v.ScrollingDistance=0
+	v.ScrollLength = 0
+	v.id = uuid.New().String()
 	if v.Children != nil {
 		for _, l := range v.Children {
 			if l == nil {
@@ -482,6 +561,9 @@ func (v *View) render(canvas XCanvas) {
 			v.Children = make([]Viewer, 0)
 		}
 
+	}
+	if v.Direction!=None&&v.ScrollingDistance!=0{
+		v.SetScroll(v.ScrollingDistance)
 	}
 	if v.ShouldMeasure {
 		v.setSize(v.measure(v.getSettingSize()))
@@ -507,26 +589,25 @@ func (v *View) render(canvas XCanvas) {
 		for i, l := range v.Children {
 			if l == nil && v.GetView != nil {
 				l = v.GetView(i)
+				l.init(v.Window)
 				l.setParent(v)
-				w, h := l.measure(l.getSettingSize())
-
-				l.setSize(w, h)
+				l.setSize(l.measure(l.getSettingSize()))
 				v.Children[i] = l
-
 			}
 			if l == nil {
 				continue
 			}
+
 			l.setRenderPosition()
 			x, y := l.GetCurrentPosition()
 			w, h := l.GetSize()
 			x1,y1,x2,y2:=l.getRenderRect()
 
+
 			if float64(x)+w < x1 || float64(x) > x2 || float64(y)+h < y1 || float64(y) > y2 {
 				l.setCurrentPosition(float64(x), float64(y))
 			} else {
 				l.setCurrentPosition(float64(x), float64(y))
-
 				l.render(canvas)
 
 			}
@@ -580,7 +661,7 @@ func (v *View) Scroll(x, y float64, distance float64) bool {
 			if c == nil {
 				continue
 			}
-			l, t := c.getPosition()
+			l, t := c.GetCurrentPosition()
 			width, height := c.GetSize()
 
 			if x >= l && x <= l+width && y >= t && y <= t+height {
@@ -595,7 +676,26 @@ func (v *View) Scroll(x, y float64, distance float64) bool {
 	}
 	if v.Direction != None {
 
-		v.SetScroll(distance * 35)
+
+
+		if v.ScrollLength==v.MaxScrollLength&&distance<0{
+			return false
+		}
+		if v.ScrollLength==0&&distance>0{
+			return false
+		}
+
+		v.ScrollingDistance=distance
+		v.id=uuid.New().String()
+		go func(v *View,id string) {
+
+			time.Sleep(time.Millisecond*100)
+			if id==v.id{
+				v.ScrollingDistance=0
+			}
+
+
+		}(v,v.id)
 		return true
 	}
 
@@ -610,29 +710,31 @@ func (v *View) Event(x, y float64, action CursorType) bool {
 		v.isDownScollBar = false
 		if v.Direction == Vertical {
 			w, h := v.GetSize()
+			l,t:=v.GetCurrentPosition()
 			rate := math.Abs(v.ScrollLength / v.MaxScrollLength)
 			scrollBarWidth := h * h / (h + math.Abs(v.MaxScrollLength))
 			if scrollBarWidth < ScollBarMinWidth {
 				scrollBarWidth = ScollBarMinWidth
 			}
-			x0, y0 := w-ScollBarMinWidth, (h-scrollBarWidth)*rate
-			x1, y1 := x0+ScollBarMinWidth, scrollBarWidth*(1-rate)+rate*h
+			x0, y0 := w-ScollBarMinWidth+l, (h-scrollBarWidth)*rate+t
+			x1, y1 := x0+ScollBarMinWidth+l, scrollBarWidth*(1-rate)+rate*h+t
 
 			if x >= x0 && x <= x1 && y >= y0 && y <= y1 {
 				v.downPoint = []float64{x, y}
 				v.isDownScollBar = true
+
 				return true
 			}
 		} else if v.Direction == Horizontal {
 			w, h := v.GetSize()
 			rate := math.Abs(v.ScrollLength / v.MaxScrollLength)
-
+			l,t:=v.GetCurrentPosition()
 			scrollBarWidth := w * w / (w + math.Abs(v.MaxScrollLength))
 			if scrollBarWidth < ScollBarMinWidth {
 				scrollBarWidth = ScollBarMinWidth
 			}
-			x0, y0 := (w-scrollBarWidth)*rate, h-ScollBarMinWidth
-			x1, y1 := scrollBarWidth*(1-rate)+rate*w, y0+ScollBarMinWidth
+			x0, y0 := (w-scrollBarWidth)*rate+l, h-ScollBarMinWidth+t
+			x1, y1 := scrollBarWidth*(1-rate)+rate*w+l, y0+ScollBarMinWidth+t
 			if x >= x0 && x <= x1 && y >= y0 && y <= y1 {
 				v.downPoint = []float64{x, y}
 				v.isDownScollBar = true
@@ -1256,3 +1358,4 @@ func (v *ImageView) MeasureSize(w, h float64) (float64, float64) {
 
 	return w, h
 }
+

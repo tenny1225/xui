@@ -16,7 +16,7 @@ type XPaint struct {
 }
 
 type XCanvas interface {
-	DrawCircle(dx, dy, radius float64, p XPaint)
+	DrawCircle(dx, dy, radius float64, c *color.RGBA)
 	DrawLine(x1, y1, x2, y2 float64, p XPaint)
 	DrawText(str string,x, y ,ax,ay ,mw,mh float64, p XPaint)
 	DrawRect(x1, y1, w, h float64, c *color.RGBA)
@@ -75,15 +75,29 @@ func (z *xcanvas) DrawText(str string,x, y ,ax,ay,mw,mh float64, p XPaint){
 	c.Fill()
 	z.DrawImage(x-w*ax, y-h*ax, img)
 }
-func (z *xcanvas) DrawCircle(dx, dy, radius float64, p XPaint) {
-	rgba := image.NewRGBA(image.Rect(0, 0, int(2*radius), int(2*radius)))
-	dc := gg.NewContextForRGBA(rgba)
-	dc.DrawCircle(radius, radius, radius)
-	dc.SetColor(p.Color)
-	dc.Fill()
-	t := NewTexture(rgba)
-	w,h:=z.window.GetSize()
-	t.Draw(z, dx-radius, dy-radius,w,h);
+func (z *xcanvas) DrawCircle(x, y, radius float64, c*color.RGBA) {
+	tx,ty:=z.GetTranslate()
+
+	x+=tx
+	y+=ty
+	winWidth, winHeight:=z.window.GetSize()
+	x, y = AppCoordinate2OpenGL(winWidth, winHeight, x, y)
+	radius, _ = AppWidthHeight2OpenGL(winWidth, winHeight, (float64(radius)), (float64(radius)))
+
+	r,g,b:=c.R,c.G,c.B
+
+
+	gl.Color3f(float32(r)/255.0,float32(g)/255.0,float32(b)/255.0)
+	n := 1000;
+	R := radius
+	tempVal := 2 * math.Pi / float64(n)
+	gl.Begin(gl.POLYGON);
+	for i:=0;i<n;i++{
+		gl.Vertex2f(float32(x+R * math.Cos(tempVal * float64(i))),float32(y+ R * math.Sin(tempVal * float64(i))));
+	}
+
+	gl.End()
+	gl.Color3f(1,1,1)
 }
 
 func (z *xcanvas) DrawLine(x1, y1, x2, y2 float64, p XPaint) {
@@ -127,6 +141,7 @@ func (z *xcanvas) DrawRect(x, y, w, h float64, c *color.RGBA) {
 
 	//gl.Rectf(x)
 
+
 }
 
 func (z *xcanvas) DrawImage(x, y float64, img image.Image) {
@@ -139,6 +154,8 @@ func (z *xcanvas) DrawImage(x, y float64, img image.Image) {
 	}
 
 	t := NewTexture(rgba)
+	t.ScaleX=z.scaleX
+	t.ScaleY=z.scaleY
 	t.IsAlpha = true
 	w,h:=z.window.GetSize()
 	t.Draw(z, x, y,w,h);
@@ -154,6 +171,8 @@ func (z *xcanvas) DrawImageInRetangle(x, y float64, img image.Image,rx,ry,rw,rh 
 	}
 
 	t := NewTexture(rgba)
+	t.ScaleX=z.scaleX
+	t.ScaleY=z.scaleY
 	t.IsAlpha = true
 	w,h:=z.window.GetSize()
 	//t.Draw(z, x, y,w,h);
@@ -267,6 +286,8 @@ func NewCanvas(window XWindow) XCanvas {
 	return &xcanvas{
 		backups: make([]xcanvas, 0),
 		window:  window,
+		scaleX:1,
+		scaleY:1,
 	}
 
 }
