@@ -59,3 +59,4 @@ func main()  {
 
 ![2021-05-27 12-50-33屏幕截图.png](https://upload-images.jianshu.io/upload_images/874510-b78eaf5598f5ddc0.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
 
+如果在windows运行时移除命令黑框，编译时执行go build -ldflags "-s -w -H=windowsgui"
